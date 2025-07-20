@@ -48,7 +48,6 @@ func (r *NoteService) GetNoteByTitle(title string) (Note, error) {
 
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		// TODO need to check how to better handle this error
 		slog.Error("failed to read note", "file", filePath, "error", err)
 		return NewNote(title, "", filePath, ""), err
 	}
@@ -61,7 +60,7 @@ func (r *NoteService) GetNoteByTitle(title string) (Note, error) {
 func (r *NoteService) SaveNote(note Note) error {
 	err := os.WriteFile(note.FilePath(), []byte(note.FileContent()), 0644)
 	if err != nil {
-		slog.Error("failed to save note", "file", note.FilePath, "error", err)
+		slog.Error("failed to save note", "file", note.FilePath(), "error", err)
 		return err
 	}
 
