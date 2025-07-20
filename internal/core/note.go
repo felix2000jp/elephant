@@ -1,4 +1,4 @@
-package notes
+package core
 
 type Note struct {
 	title, description    string
