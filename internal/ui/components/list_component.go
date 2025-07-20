@@ -1,7 +1,6 @@
 package components
 
 import (
-	"elephant/internal/core"
 	"elephant/internal/ui/theme"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -48,22 +47,14 @@ func (l *ListComponent) ResizeWindow(msg tea.WindowSizeMsg) {
 	l.list.SetSize(l.Width, l.Height)
 }
 
-func (l *ListComponent) GetSelectedItem() core.Note {
+func (l *ListComponent) GetSelectedItem() list.Item {
 	if item := l.list.SelectedItem(); item != nil {
-		if note, ok := item.(core.Note); ok {
-			return note
-		}
+		return item
 	}
 
-	return core.Note{}
+	return nil
 }
 
-func (l *ListComponent) SetItems(notes []core.Note) {
-	var items []list.Item
-
-	for _, note := range notes {
-		items = append(items, note)
-	}
-
+func (l *ListComponent) SetItems(items []list.Item) {
 	l.list.SetItems(items)
 }

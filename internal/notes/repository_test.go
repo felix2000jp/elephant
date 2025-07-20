@@ -1,4 +1,4 @@
-package core
+package notes
 
 import (
 	"os"
@@ -20,7 +20,7 @@ func TestGetAllNotes(t *testing.T) {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
-	service := NewNoteService(tmpDir)
+	service := NewRepository(tmpDir)
 	notes, err := service.GetAllNotes()
 	if err != nil {
 		t.Fatalf("GetAllNotes failed: %v", err)
@@ -58,7 +58,7 @@ func TestGetNoteByTitle(t *testing.T) {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
-	service := NewNoteService(tmpDir)
+	service := NewRepository(tmpDir)
 	note, err := service.GetNoteByTitle("test")
 	if err != nil {
 		t.Fatalf("GetNoteByTitle failed: %v", err)
@@ -86,7 +86,7 @@ func TestSaveNote(t *testing.T) {
 	content := "# Saved Note\nThis is saved content"
 	note := NewNote("saved_note", "Saved Note", filePath, content)
 
-	service := NewNoteService(tmpDir)
+	service := NewRepository(tmpDir)
 	err := service.SaveNote(note)
 	if err != nil {
 		t.Fatalf("SaveNote failed: %v", err)

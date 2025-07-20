@@ -1,7 +1,6 @@
 package components
 
 import (
-	"elephant/internal/core"
 	"elephant/internal/ui/theme"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
@@ -50,8 +49,8 @@ func (t *TextAreaComponent) ResizeWindow(msg tea.WindowSizeMsg) {
 	t.textarea.SetHeight(t.Height)
 }
 
-func (t *TextAreaComponent) SetNote(note core.Note) {
-	t.textarea.SetValue(note.FileContent())
+func (t *TextAreaComponent) SetNote(fileContent string) {
+	t.textarea.SetValue(fileContent)
 }
 
 func (t *TextAreaComponent) GetContent() string {

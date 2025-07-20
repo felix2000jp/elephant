@@ -1,7 +1,6 @@
 package components
 
 import (
-	"elephant/internal/core"
 	"elephant/internal/ui/theme"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -57,8 +56,8 @@ func (m *MarkdownComponent) ResizeWindow(msg tea.WindowSizeMsg) {
 	m.markdown.Height = m.Height
 }
 
-func (m *MarkdownComponent) SetContent(note core.Note) {
-	content, err := m.renderer.Render(note.FileContent())
+func (m *MarkdownComponent) SetContent(fileContent string) {
+	content, err := m.renderer.Render(fileContent)
 	if err != nil {
 		slog.Error("failed to render markdown", "error", err)
 		m.markdown.SetContent("Could not render markdown.")
