@@ -49,7 +49,7 @@ func (r *NoteService) GetNoteByTitle(title string) (Note, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		slog.Error("failed to read note", "file", filePath, "error", err)
-		return NewNote(title, "", filePath, ""), err
+		return Note{}, err
 	}
 
 	fileContent := string(content)
