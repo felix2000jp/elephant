@@ -7,48 +7,48 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type Model struct {
+type Component struct {
 	Width, Height int
 	list          list.Model
 	repository    core.Repository
 }
 
-func NewModel(repository core.Repository) Model {
+func NewModel(repository core.Repository) Component {
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
-	m := Model{
+	c := Component{
 		list:       itemList,
 		Width:      itemList.Width(),
 		Height:     itemList.Height(),
 		repository: repository,
 	}
 
-	return m
+	return c
 }
 
-func (m *Model) Init() tea.Cmd {
-	return m.HandleInit()
+func (c *Component) Init() tea.Cmd {
+	return c.HandleInit()
 }
 
-func (m *Model) Update(msg tea.Msg) tea.Cmd {
+func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		cmd = m.HandleResizeWindow(msg)
+		cmd = c.HandleResizeWindow(msg)
 		cmds = append(cmds, cmd)
 	case NotesLoadedMsg:
-		cmd = m.HandleNotesLoaded(msg)
+		cmd = c.HandleNotesLoaded(msg)
 		cmds = append(cmds, cmd)
 	}
 
-	m.list, cmd = m.list.Update(msg)
+	c.list, cmd = c.list.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return tea.Batch(cmds...)
 }
 
-func (m *Model) View(style lipgloss.Style) string {
-	listView := m.list.View()
-	return style.Width(m.Width).Height(m.Height).Render(listView)
+func (c *Component) View(style lipgloss.Style) string {
+	listView := c.list.View()
+	return style.Width(c.Width).Height(c.Height).Render(listView)
 }
