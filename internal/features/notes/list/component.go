@@ -13,7 +13,7 @@ type Component struct {
 	repository    core.Repository
 }
 
-func NewModel(repository core.Repository) Component {
+func NewComponent(repository core.Repository) Component {
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	c := Component{
 		list:       itemList,

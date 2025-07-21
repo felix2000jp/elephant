@@ -18,27 +18,26 @@ const (
 )
 
 type Model struct {
-	State State
-
-	listModel *list.Model
+	State         State
+	listComponent *list.Component
 }
 
 func NewModel() Model {
 	repository := core.NewNoteRepository(".elephant")
-	listModel := list.NewModel(&repository)
+	listComponent := list.NewComponent(&repository)
 
 	return Model{
-		State:     ListState,
-		listModel: &listModel,
+		State:         ListState,
+		listComponent: &listComponent,
 	}
 }
 
 func (m *Model) Init() tea.Cmd {
-	return m.listModel.Init()
+	return m.listComponent.Init()
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	listCmd := m.listModel.Update(msg)
+	listCmd := m.listComponent.Update(msg)
 
 	return m, tea.Batch(listCmd)
 }
@@ -46,7 +45,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	switch m.State {
 	case ListState:
-		return m.listModel.View(appStyle)
+		return m.listComponent.View(appStyle)
 	default:
 		return "Could not render application"
 	}
