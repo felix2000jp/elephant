@@ -1,24 +1,27 @@
-package list
+package view
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/notes"
 	"elephant/internal/theme"
-	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/glamour"
 )
 
 type Component struct {
 	Width, Height int
-	list          list.Model
+	markdown      viewport.Model
+	renderer      *glamour.TermRenderer
 	repository    core.Repository
 }
 
 func NewComponent(repository core.Repository) Component {
-	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
+	vp := viewport.New(0, 0)
 	c := Component{
-		list:       itemList,
-		Width:      itemList.Width(),
-		Height:     itemList.Height(),
+		markdown:   vp,
+		Width:      vp.Width,
+		Height:     vp.Height,
 		repository: repository,
 	}
 
@@ -37,18 +40,18 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	case tea.WindowSizeMsg:
 		cmd = c.HandleResizeWindow(msg)
 		cmds = append(cmds, cmd)
-	case NotesLoadedMsg:
-		cmd = c.HandleNotesLoaded(msg)
+	case notes.ViewNoteMsg:
+		cmd = c.HandleViewNoteMsg(msg)
 		cmds = append(cmds, cmd)
 	}
 
-	c.list, cmd = c.list.Update(msg)
+	c.markdown, cmd = c.markdown.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return tea.Batch(cmds...)
 }
 
 func (c *Component) View() string {
-	listView := c.list.View()
-	return theme.Style.Width(c.Width).Height(c.Height).Render(listView)
+	markdownView := c.markdown.View()
+	return theme.Style.Width(c.Width).Height(c.Height).Render(markdownView)
 }

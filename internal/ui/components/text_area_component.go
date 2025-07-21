@@ -1,7 +1,7 @@
 package components
 
 import (
-	"elephant/internal/ui/theme"
+	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )

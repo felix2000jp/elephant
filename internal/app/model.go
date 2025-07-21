@@ -3,11 +3,9 @@ package app
 import (
 	"elephant/internal/core"
 	"elephant/internal/features/notes/list"
+	"elephant/internal/features/notes/view"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
-
-var appStyle = lipgloss.NewStyle()
 
 type State int
 
@@ -20,32 +18,41 @@ const (
 type Model struct {
 	State         State
 	listComponent *list.Component
+	viewComponent *view.Component
 }
 
 func NewModel() Model {
 	repository := core.NewNoteRepository(".elephant")
 	listComponent := list.NewComponent(&repository)
+	viewComponent := view.NewComponent(&repository)
 
 	return Model{
 		State:         ListState,
 		listComponent: &listComponent,
+		viewComponent: &viewComponent,
 	}
 }
 
 func (m *Model) Init() tea.Cmd {
-	return m.listComponent.Init()
+	return tea.Batch(
+		m.listComponent.Init(),
+		m.viewComponent.Init(),
+	)
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	listCmd := m.listComponent.Update(msg)
-
-	return m, tea.Batch(listCmd)
+	return m, tea.Batch(
+		m.listComponent.Update(msg),
+		m.viewComponent.Update(msg),
+	)
 }
 
 func (m *Model) View() string {
 	switch m.State {
 	case ListState:
-		return m.listComponent.View(appStyle)
+		return m.listComponent.View()
+	case ViewState:
+		return m.viewComponent.View()
 	default:
 		return "Could not render application"
 	}

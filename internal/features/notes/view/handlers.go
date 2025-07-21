@@ -1,0 +1,52 @@
+package view
+
+import (
+	"elephant/internal/features/notes"
+	"elephant/internal/theme"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/glamour"
+	"log/slog"
+)
+
+func (c *Component) HandleInit() tea.Cmd {
+	return func() tea.Msg {
+		renderer, err := glamour.NewTermRenderer(glamour.WithAutoStyle(), glamour.WithWordWrap(120))
+		if err != nil {
+			slog.Error("failed to initialize markdown renderer", "error", err)
+			return nil
+		}
+
+		c.renderer = renderer
+		return nil
+	}
+}
+
+func (c *Component) HandleViewNoteMsg(msg notes.ViewNoteMsg) tea.Cmd {
+	note, err := c.repository.GetNoteByTitle(msg.NoteTitle)
+	if err != nil {
+		slog.Error("failed to load note", "error", err)
+		c.markdown.SetContent("Could not render markdown.")
+		return nil
+	}
+
+	content, err := c.renderer.Render(note.FileContent())
+	if err != nil {
+		slog.Error("failed to render markdown", "error", err)
+		c.markdown.SetContent("Could not render markdown.")
+		return nil
+	}
+
+	c.markdown.SetContent(content)
+	return nil
+}
+
+func (c *Component) HandleResizeWindow(msg tea.WindowSizeMsg) tea.Cmd {
+	h, v := theme.Style.GetFrameSize()
+
+	c.Width = msg.Width - h
+	c.Height = msg.Height - v
+
+	c.markdown.Width = c.Width
+	c.markdown.Height = c.Height
+	return nil
+}

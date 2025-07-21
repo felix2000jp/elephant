@@ -2,7 +2,7 @@ package list
 
 import (
 	"elephant/internal/core"
-	"elephant/internal/ui/theme"
+	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"log/slog"
