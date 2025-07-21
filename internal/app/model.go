@@ -9,6 +9,14 @@ import (
 
 var appStyle = lipgloss.NewStyle()
 
+type State int
+
+const (
+	ListState State = iota
+	ViewState
+	EditState
+)
+
 type Model struct {
 	State State
 
