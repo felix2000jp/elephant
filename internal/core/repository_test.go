@@ -6,100 +6,102 @@ import (
 	"testing"
 )
 
-func TestGetAllNotes(t *testing.T) {
-	tmpDir := createTempDir(t)
-	defer removeTempDir(t, tmpDir)
+func TestNoteRepository(t *testing.T) {
+	t.Run("GetAllNotes", func(t *testing.T) {
+		tmpDir := createTempDir(t)
+		defer removeTempDir(t, tmpDir)
 
-	err := os.WriteFile(filepath.Join(tmpDir, "note1.md"), []byte("# First Note\nThis is the content"), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-
-	err = os.WriteFile(filepath.Join(tmpDir, "note2.md"), []byte("# Second Note\nMore content here"), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-
-	service := NewRepository(tmpDir)
-	notes, err := service.GetAllNotes()
-	if err != nil {
-		t.Fatalf("GetAllNotes failed: %v", err)
-	}
-
-	if len(notes) != 2 {
-		t.Errorf("Expected 2 notes, got %d", len(notes))
-	}
-
-	expectedTitles := map[string]string{
-		"note1": "First Note",
-		"note2": "Second Note",
-	}
-
-	for _, note := range notes {
-		expectedDesc, exists := expectedTitles[note.Title()]
-		if !exists {
-			t.Errorf("Unexpected note title: %s", note.Title())
-			continue
+		err := os.WriteFile(filepath.Join(tmpDir, "note1.md"), []byte("# First Note\nThis is the content"), 0644)
+		if err != nil {
+			t.Fatalf("Failed to create test file: %v", err)
 		}
-		if note.Description() != expectedDesc {
-			t.Errorf("Expected description '%s', got '%s'", expectedDesc, note.Description())
+
+		err = os.WriteFile(filepath.Join(tmpDir, "note2.md"), []byte("# Second Note\nMore content here"), 0644)
+		if err != nil {
+			t.Fatalf("Failed to create test file: %v", err)
 		}
-	}
-}
 
-func TestGetNoteByTitle(t *testing.T) {
-	tmpDir := createTempDir(t)
-	defer removeTempDir(t, tmpDir)
+		service := NewNoteRepository(tmpDir)
+		notes, err := service.GetAllNotes()
+		if err != nil {
+			t.Fatalf("GetAllNotes failed: %v", err)
+		}
 
-	path := filepath.Join(tmpDir, "test.md")
-	content := "# Test Note\nThis is some test content"
-	err := os.WriteFile(path, []byte(content), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
+		if len(notes) != 2 {
+			t.Errorf("Expected 2 notes, got %d", len(notes))
+		}
 
-	service := NewRepository(tmpDir)
-	note, err := service.GetNoteByTitle("test")
-	if err != nil {
-		t.Fatalf("GetNoteByTitle failed: %v", err)
-	}
+		expectedTitles := map[string]string{
+			"note1": "First Note",
+			"note2": "Second Note",
+		}
 
-	if note.Title() != "test" {
-		t.Errorf("Expected title 'test', got '%s'", note.Title())
-	}
-	if note.Description() != "Test Note" {
-		t.Errorf("Expected description 'Test Note', got '%s'", note.Description())
-	}
-	if note.FilePath() != path {
-		t.Errorf("Expected path '%s', got '%s'", path, note.FilePath())
-	}
-	if note.FileContent() != content {
-		t.Errorf("Expected content '%s', got '%s'", content, note.FileContent())
-	}
-}
+		for _, note := range notes {
+			expectedDesc, exists := expectedTitles[note.Title()]
+			if !exists {
+				t.Errorf("Unexpected note title: %s", note.Title())
+				continue
+			}
+			if note.Description() != expectedDesc {
+				t.Errorf("Expected description '%s', got '%s'", expectedDesc, note.Description())
+			}
+		}
+	})
 
-func TestSaveNote(t *testing.T) {
-	tmpDir := createTempDir(t)
-	defer removeTempDir(t, tmpDir)
+	t.Run("GetNoteByTitle", func(t *testing.T) {
+		tmpDir := createTempDir(t)
+		defer removeTempDir(t, tmpDir)
 
-	filePath := filepath.Join(tmpDir, "saved_note.md")
-	content := "# Saved Note\nThis is saved content"
-	note := NewNote("saved_note", "Saved Note", filePath, content)
+		path := filepath.Join(tmpDir, "test.md")
+		content := "# Test Note\nThis is some test content"
+		err := os.WriteFile(path, []byte(content), 0644)
+		if err != nil {
+			t.Fatalf("Failed to create test file: %v", err)
+		}
 
-	service := NewRepository(tmpDir)
-	err := service.SaveNote(note)
-	if err != nil {
-		t.Fatalf("SaveNote failed: %v", err)
-	}
+		service := NewNoteRepository(tmpDir)
+		note, err := service.GetNoteByTitle("test")
+		if err != nil {
+			t.Fatalf("GetNoteByTitle failed: %v", err)
+		}
 
-	savedContent, err := os.ReadFile(filePath)
-	if err != nil {
-		t.Fatalf("Failed to read saved file: %v", err)
-	}
+		if note.Title() != "test" {
+			t.Errorf("Expected title 'test', got '%s'", note.Title())
+		}
+		if note.Description() != "Test Note" {
+			t.Errorf("Expected description 'Test Note', got '%s'", note.Description())
+		}
+		if note.FilePath() != path {
+			t.Errorf("Expected path '%s', got '%s'", path, note.FilePath())
+		}
+		if note.FileContent() != content {
+			t.Errorf("Expected content '%s', got '%s'", content, note.FileContent())
+		}
+	})
 
-	if string(savedContent) != content {
-		t.Errorf("Expected saved content '%s', got '%s'", content, string(savedContent))
-	}
+	t.Run("SaveNote", func(t *testing.T) {
+		tmpDir := createTempDir(t)
+		defer removeTempDir(t, tmpDir)
+
+		filePath := filepath.Join(tmpDir, "saved_note.md")
+		content := "# Saved Note\nThis is saved content"
+		note := NewNote("saved_note", "Saved Note", filePath, content)
+
+		service := NewNoteRepository(tmpDir)
+		err := service.SaveNote(note)
+		if err != nil {
+			t.Fatalf("SaveNote failed: %v", err)
+		}
+
+		savedContent, err := os.ReadFile(filePath)
+		if err != nil {
+			t.Fatalf("Failed to read saved file: %v", err)
+		}
+
+		if string(savedContent) != content {
+			t.Errorf("Expected saved content '%s', got '%s'", content, string(savedContent))
+		}
+	})
 }
 
 func createTempDir(t *testing.T) string {
