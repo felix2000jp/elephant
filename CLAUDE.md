@@ -34,7 +34,49 @@ go mod tidy # Initialize and download dependencies
 
 ## Project Structure
 
+Elephant uses a **converged feature-based architecture** that leverages Bubble Tea's native event system. Each feature
+is self-contained with a three-part pattern: messages → handlers → model+component.
+
+```
+internal/
+├── core/                        # Domain logic (pure Go, no UI dependencies)
+│   ├── note.go                  # Note entity
+│   └── repository.go            # File system operations
+├── features/                    # Feature modules
+│   ├── notes/                   
+│   │   ├── list/                # List notes feature
+│   │   │   ├── messages.go      # Custom tea.Msg types
+│   │   │   ├── handlers.go      # Message handlers
+│   │   │   ├── model.go         # Feature model + component
+│   │   │   └── list_test.go     # Feature tests
+│   │   ├── view/                # View note feature
+│   │   │   ├── messages.go      # Custom tea.Msg types
+│   │   │   ├── handlers.go      # Message handlers
+│   │   │   ├── model.go         # Feature model + component
+│   │   │   └── view_test.go     # Feature tests
+│   │   ├── edit/                # Edit note feature
+│   │   │   ├── messages.go      # Custom tea.Msg types
+│   │   │   ├── handlers.go      # Message handlers
+│   │   │   ├── model.go         # Feature model + component
+│   │   │   └── edit_test.go     # Feature tests
+│   │   └── commands.go          # Shared note commands (load, save)
+└── app/                         # Application orchestrator
+    ├── model.go                 # Main model & message router
+    └── state.go                 # Application state
+```
+
+### Architecture Principles
+
+#### Message Flow
+
+- App layer routes messages to appropriate features
+- Features handle their own messages via handlers
+- Cross-feature communication happens through the app layer
+- Shared concerns (like window resize) are forwarded to all relevant features
 
 ## Notes
 
 - Standard Go conventions and best practices should be applied as development progresses
+- Use the feature-based architecture for all new functionality
+- Keep core domain logic in `internal/core/` with no UI dependencies
+- Features should communicate through the app layer, not directly with each other
