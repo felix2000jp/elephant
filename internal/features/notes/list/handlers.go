@@ -27,6 +27,7 @@ func (m *Model) HandleNotesLoaded(msg NotesLoadedMsg) tea.Cmd {
 		items[i] = note
 	}
 
+	m.list.Title = "Elephant Notes"
 	m.list.SetItems(items)
 	return nil
 }

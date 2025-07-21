@@ -2,9 +2,9 @@ package list
 
 import (
 	"elephant/internal/core"
-	"elephant/internal/ui/theme"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type Model struct {
@@ -48,7 +48,7 @@ func (m *Model) Update(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m *Model) View() string {
+func (m *Model) View(style lipgloss.Style) string {
 	listView := m.list.View()
-	return theme.Style.Width(m.Width).Height(m.Height).Render(listView)
+	return style.Width(m.Width).Height(m.Height).Render(listView)
 }

@@ -4,7 +4,10 @@ import (
 	"elephant/internal/core"
 	"elephant/internal/features/notes/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
+
+var appStyle = lipgloss.NewStyle()
 
 type Model struct {
 	State State
@@ -13,7 +16,7 @@ type Model struct {
 }
 
 func NewModel() Model {
-	repository := core.NewRepository("./elephant")
+	repository := core.NewRepository(".elephant")
 	listModel := list.NewModel(&repository)
 
 	return Model{
@@ -23,8 +26,7 @@ func NewModel() Model {
 }
 
 func (m *Model) Init() tea.Cmd {
-	m.listModel.Init()
-	return nil
+	return m.listModel.Init()
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -34,8 +36,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) View() string {
-	if m.State == ListState {
-		return m.listModel.View()
+	switch m.State {
+	case ListState:
+		return m.listModel.View(appStyle)
+	default:
+		return "Could not render application"
 	}
-	return "Could not render application"
 }
