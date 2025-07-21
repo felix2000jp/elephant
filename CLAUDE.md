@@ -45,21 +45,18 @@ internal/
 ├── features/                    # Feature modules
 │   ├── notes/                   
 │   │   ├── list/                # List notes feature
-│   │   │   ├── messages.go      # Custom tea.Msg types
 │   │   │   ├── handlers.go      # Message handlers
-│   │   │   ├── model.go         # Feature model + component
+│   │   │   ├── component.go     # Feature model + component
 │   │   │   └── list_test.go     # Feature tests
 │   │   ├── view/                # View note feature
-│   │   │   ├── messages.go      # Custom tea.Msg types
 │   │   │   ├── handlers.go      # Message handlers
-│   │   │   ├── model.go         # Feature model + component
+│   │   │   ├── component.go     # Feature model + component
 │   │   │   └── view_test.go     # Feature tests
 │   │   ├── edit/                # Edit note feature
-│   │   │   ├── messages.go      # Custom tea.Msg types
 │   │   │   ├── handlers.go      # Message handlers
-│   │   │   ├── model.go         # Feature model + component
+│   │   │   ├── component.go     # Feature model + component
 │   │   │   └── edit_test.go     # Feature tests
-│   │   └── commands.go          # Shared note commands (load, save)
+│   │   └── messages.go          # Shared note messages (Edit, View)
 └── app/                         # Application orchestrator
     ├── model.go                 # Main model & message router
     └── state.go                 # Application state
