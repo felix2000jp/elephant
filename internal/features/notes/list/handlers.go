@@ -12,7 +12,7 @@ func (m *Model) HandleInit() tea.Cmd {
 		notes, err := m.repository.GetAllNotes()
 		if err != nil {
 			slog.Error("failed to load notes", "error", err)
-			return nil
+			return NotesLoadedMsg{}
 		}
 
 		return NotesLoadedMsg{Notes: notes}
@@ -39,6 +39,5 @@ func (m *Model) HandleResizeWindow(msg tea.WindowSizeMsg) tea.Cmd {
 	m.Height = msg.Height - v
 
 	m.list.SetSize(m.Width, m.Height)
-
 	return nil
 }

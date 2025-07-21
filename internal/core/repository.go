@@ -7,15 +7,21 @@ import (
 	"strings"
 )
 
-type Repository struct {
+type Repository interface {
+	GetAllNotes() ([]Note, error)
+	GetNoteByTitle(title string) (Note, error)
+	SaveNote(note Note) error
+}
+
+type NoteRepository struct {
 	basePath string
 }
 
-func NewRepository(basePath string) Repository {
-	return Repository{basePath: basePath}
+func NewNoteRepository(basePath string) NoteRepository {
+	return NoteRepository{basePath: basePath}
 }
 
-func (r *Repository) GetAllNotes() ([]Note, error) {
+func (r *NoteRepository) GetAllNotes() ([]Note, error) {
 	pattern := filepath.Join(r.basePath, "*.md")
 
 	files, err := filepath.Glob(pattern)
@@ -43,7 +49,7 @@ func (r *Repository) GetAllNotes() ([]Note, error) {
 	return notes, nil
 }
 
-func (r *Repository) GetNoteByTitle(title string) (Note, error) {
+func (r *NoteRepository) GetNoteByTitle(title string) (Note, error) {
 	filePath := filepath.Join(r.basePath, title+".md")
 
 	content, err := os.ReadFile(filePath)
@@ -57,7 +63,7 @@ func (r *Repository) GetNoteByTitle(title string) (Note, error) {
 	return NewNote(title, description, filePath, fileContent), nil
 }
 
-func (r *Repository) SaveNote(note Note) error {
+func (r *NoteRepository) SaveNote(note Note) error {
 	err := os.WriteFile(note.FilePath(), []byte(note.FileContent()), 0644)
 	if err != nil {
 		slog.Error("failed to save note", "file", note.FilePath(), "error", err)

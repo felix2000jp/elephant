@@ -10,10 +10,10 @@ import (
 type Model struct {
 	Width, Height int
 	list          list.Model
-	repository    *core.Repository
+	repository    core.Repository
 }
 
-func NewModel(repository *core.Repository) Model {
+func NewModel(repository core.Repository) Model {
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	m := Model{
 		list:       itemList,

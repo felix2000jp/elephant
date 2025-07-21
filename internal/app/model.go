@@ -16,7 +16,7 @@ type Model struct {
 }
 
 func NewModel() Model {
-	repository := core.NewRepository(".elephant")
+	repository := core.NewNoteRepository(".elephant")
 	listModel := list.NewModel(&repository)
 
 	return Model{
