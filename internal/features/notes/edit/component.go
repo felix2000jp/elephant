@@ -1,0 +1,54 @@
+package edit
+
+import (
+	"elephant/internal/core"
+	"elephant/internal/theme"
+	"github.com/charmbracelet/bubbles/textarea"
+	tea "github.com/charmbracelet/bubbletea"
+)
+
+type Component struct {
+	Width, Height int
+	textarea      textarea.Model
+	repository    core.Repository
+}
+
+func NewComponent(repository core.Repository) Component {
+	ta := textarea.New()
+	ta.Focus()
+	ta.ShowLineNumbers = false
+
+	c := Component{
+		Width:      ta.Width(),
+		Height:     ta.Height(),
+		textarea:   ta,
+		repository: repository,
+	}
+
+	return c
+}
+
+func (c *Component) Init() tea.Cmd {
+	return c.HandleInit()
+}
+
+func (c *Component) Update(msg tea.Msg) tea.Cmd {
+	var cmd tea.Cmd
+	var cmds []tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		cmd = c.HandleResizeWindow(msg)
+		cmds = append(cmds, cmd)
+	}
+
+	c.textarea, cmd = c.textarea.Update(msg)
+	cmds = append(cmds, cmd)
+
+	return tea.Batch(cmds...)
+}
+
+func (c *Component) View() string {
+	listView := c.textarea.View()
+	return theme.Style.Width(c.Width).Height(c.Height).Render(listView)
+}
