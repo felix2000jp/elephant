@@ -8,7 +8,7 @@ import (
 )
 
 type Component struct {
-	Width, Height int
+	width, height int
 	list          list.Model
 	repository    core.Repository
 }
@@ -17,8 +17,8 @@ func NewComponent(repository core.Repository) Component {
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	c := Component{
 		list:       itemList,
-		Width:      itemList.Width(),
-		Height:     itemList.Height(),
+		width:      itemList.Width(),
+		height:     itemList.Height(),
 		repository: repository,
 	}
 
@@ -50,5 +50,5 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 
 func (c *Component) View() string {
 	listView := c.list.View()
-	return theme.Style.Width(c.Width).Height(c.Height).Render(listView)
+	return theme.Style.Width(c.width).Height(c.height).Render(listView)
 }

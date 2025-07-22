@@ -8,7 +8,7 @@ import (
 )
 
 type Component struct {
-	Width, Height int
+	width, height int
 	textarea      textarea.Model
 	repository    core.Repository
 }
@@ -19,8 +19,8 @@ func NewComponent(repository core.Repository) Component {
 	ta.ShowLineNumbers = false
 
 	c := Component{
-		Width:      ta.Width(),
-		Height:     ta.Height(),
+		width:      ta.Width(),
+		height:     ta.Height(),
 		textarea:   ta,
 		repository: repository,
 	}
@@ -50,5 +50,5 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 
 func (c *Component) View() string {
 	listView := c.textarea.View()
-	return theme.Style.Width(c.Width).Height(c.Height).Render(listView)
+	return theme.Style.Width(c.width).Height(c.height).Render(listView)
 }

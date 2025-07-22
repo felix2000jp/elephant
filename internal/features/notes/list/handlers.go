@@ -1,16 +1,11 @@
 package list
 
 import (
-	"elephant/internal/core"
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"log/slog"
 )
-
-type NotesLoadedMsg struct {
-	Notes []core.Note
-}
 
 func (c *Component) HandleInit() tea.Cmd {
 	return func() tea.Msg {
@@ -24,6 +19,16 @@ func (c *Component) HandleInit() tea.Cmd {
 	}
 }
 
+func (c *Component) HandleResizeWindow(msg tea.WindowSizeMsg) tea.Cmd {
+	h, v := theme.Style.GetFrameSize()
+
+	c.width = msg.Width - h
+	c.height = msg.Height - v
+
+	c.list.SetSize(c.width, c.height)
+	return nil
+}
+
 func (c *Component) HandleNotesLoaded(msg NotesLoadedMsg) tea.Cmd {
 	notes := msg.Notes
 	items := make([]list.Item, len(notes))
@@ -34,15 +39,5 @@ func (c *Component) HandleNotesLoaded(msg NotesLoadedMsg) tea.Cmd {
 
 	c.list.Title = "Elephant Notes"
 	c.list.SetItems(items)
-	return nil
-}
-
-func (c *Component) HandleResizeWindow(msg tea.WindowSizeMsg) tea.Cmd {
-	h, v := theme.Style.GetFrameSize()
-
-	c.Width = msg.Width - h
-	c.Height = msg.Height - v
-
-	c.list.SetSize(c.Width, c.Height)
 	return nil
 }

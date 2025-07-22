@@ -14,10 +14,10 @@ func (c *Component) HandleInit() tea.Cmd {
 func (c *Component) HandleResizeWindow(msg tea.WindowSizeMsg) tea.Cmd {
 	h, v := theme.Style.GetFrameSize()
 
-	c.Width = msg.Width - h
-	c.Height = msg.Height - v
+	c.width = msg.Width - h
+	c.height = msg.Height - v
 
-	c.textarea.SetWidth(c.Width)
-	c.textarea.SetHeight(c.Height)
+	c.textarea.SetWidth(c.width)
+	c.textarea.SetHeight(c.height)
 	return nil
 }

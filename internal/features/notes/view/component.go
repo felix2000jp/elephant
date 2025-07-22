@@ -7,10 +7,11 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
+	"log/slog"
 )
 
 type Component struct {
-	Width, Height int
+	width, height int
 	markdown      viewport.Model
 	renderer      *glamour.TermRenderer
 	repository    core.Repository
@@ -18,10 +19,17 @@ type Component struct {
 
 func NewComponent(repository core.Repository) Component {
 	vp := viewport.New(0, 0)
+	renderer, err := glamour.NewTermRenderer(glamour.WithAutoStyle(), glamour.WithWordWrap(120))
+	if err != nil {
+		slog.Error("failed to initialize markdown renderer", "error", err)
+		panic("failed to initialize markdown renderer")
+	}
+
 	c := Component{
 		markdown:   vp,
-		Width:      vp.Width,
-		Height:     vp.Height,
+		renderer:   renderer,
+		width:      vp.Width,
+		height:     vp.Height,
 		repository: repository,
 	}
 
@@ -53,5 +61,5 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 
 func (c *Component) View() string {
 	markdownView := c.markdown.View()
-	return theme.Style.Width(c.Width).Height(c.Height).Render(markdownView)
+	return theme.Style.Width(c.width).Height(c.height).Render(markdownView)
 }
