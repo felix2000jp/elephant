@@ -45,21 +45,23 @@ internal/
 ├── features/                    # Feature modules
 │   ├── notes/                   
 │   │   ├── list/                # List notes feature
+│   │   │   ├── messages.go      # Messages
 │   │   │   ├── handlers.go      # Message handlers
 │   │   │   ├── component.go     # Feature model + component
 │   │   │   └── list_test.go     # Feature tests
 │   │   ├── view/                # View note feature
+│   │   │   ├── messages.go      # Messages
 │   │   │   ├── handlers.go      # Message handlers
 │   │   │   ├── component.go     # Feature model + component
 │   │   │   └── view_test.go     # Feature tests
 │   │   ├── edit/                # Edit note feature
+│   │   │   ├── messages.go      # Messages
 │   │   │   ├── handlers.go      # Message handlers
 │   │   │   ├── component.go     # Feature model + component
 │   │   │   └── edit_test.go     # Feature tests
 │   │   └── messages.go          # Shared note messages (Edit, View)
 └── app/                         # Application orchestrator
-    ├── model.go                 # Main model & message router
-    └── state.go                 # Application state
+    └── model.go                 # Main model & message router
 ```
 
 ### Architecture Principles
