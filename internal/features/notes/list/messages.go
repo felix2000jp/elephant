@@ -7,5 +7,5 @@ type NotesLoadedMsg struct {
 }
 
 type NoteSelectedMsg struct {
-	NoteTitle string
+	Note core.Note
 }

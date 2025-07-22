@@ -35,25 +35,30 @@ func (c *Component) Init() tea.Cmd {
 
 func (c *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
-	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		cmd = c.HandleResizeWindow(msg)
-		cmds = append(cmds, cmd)
 	case list.NoteSelectedMsg:
 		cmd = c.HandleListNoteSelectedMsg(msg)
-		cmds = append(cmds, cmd)
 	}
 
-	c.textarea, cmd = c.textarea.Update(msg)
-	cmds = append(cmds, cmd)
-
-	return tea.Batch(cmds...)
+	return cmd
 }
 
 func (c *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
-	return nil
+	var cmd tea.Cmd
+
+	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		if keyMsg.Type == tea.KeyEsc {
+			return func() tea.Msg {
+				return QuitNoteTextareaMsg{}
+			}
+		}
+	}
+
+	c.textarea, cmd = c.textarea.Update(msg)
+	return cmd
 }
 
 func (c *Component) View() string {

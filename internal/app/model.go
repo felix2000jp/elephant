@@ -52,15 +52,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if _, ok := msg.(list.NoteSelectedMsg); ok {
 		m.State = ViewState
 	}
-
-	cmd = m.listComponent.BackgroundUpdate(msg)
-	cmds = append(cmds, cmd)
-
-	cmd = m.viewComponent.BackgroundUpdate(msg)
-	cmds = append(cmds, cmd)
-
-	cmd = m.editComponent.BackgroundUpdate(msg)
-	cmds = append(cmds, cmd)
+	if _, ok := msg.(view.QuitNoteMarkdownMsg); ok {
+		m.State = ListState
+	}
+	if _, ok := msg.(view.EditNoteContentMsg); ok {
+		m.State = EditState
+	}
+	if _, ok := msg.(edit.QuitNoteTextareaMsg); ok {
+		m.State = ViewState
+	}
 
 	switch m.State {
 	case ListState:
@@ -73,6 +73,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd = m.editComponent.ForegroundUpdate(msg)
 		cmds = append(cmds, cmd)
 	}
+
+	cmd = m.listComponent.BackgroundUpdate(msg)
+	cmds = append(cmds, cmd)
+
+	cmd = m.viewComponent.BackgroundUpdate(msg)
+	cmds = append(cmds, cmd)
+
+	cmd = m.editComponent.BackgroundUpdate(msg)
+	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }

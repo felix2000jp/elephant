@@ -31,33 +31,31 @@ func (c *Component) Init() tea.Cmd {
 
 func (c *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
-	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		cmd = c.HandleResizeWindow(msg)
-		cmds = append(cmds, cmd)
 	case NotesLoadedMsg:
 		cmd = c.HandleNotesLoaded(msg)
-		cmds = append(cmds, cmd)
 	}
 
-	c.list, cmd = c.list.Update(msg)
-	cmds = append(cmds, cmd)
-
-	return tea.Batch(cmds...)
+	return cmd
 }
 
 func (c *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
+	var cmd tea.Cmd
+
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEnter && c.list.FilterState() != list.Filtering {
 			return func() tea.Msg {
 				selectedItem := c.list.SelectedItem().(core.Note)
-				return NoteSelectedMsg{NoteTitle: selectedItem.Title()}
+				return NoteSelectedMsg{Note: selectedItem}
 			}
 		}
 	}
-	return nil
+
+	c.list, cmd = c.list.Update(msg)
+	return cmd
 }
 
 func (c *Component) View() string {
