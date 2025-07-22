@@ -46,11 +46,31 @@ func (m *Model) Init() tea.Cmd {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	return m, tea.Batch(
-		m.listComponent.Update(msg),
-		m.viewComponent.Update(msg),
-		m.editComponent.Update(msg),
-	)
+	var cmd tea.Cmd
+	var cmds []tea.Cmd
+
+	cmd = m.listComponent.BackgroundUpdate(msg)
+	cmds = append(cmds, cmd)
+
+	cmd = m.viewComponent.BackgroundUpdate(msg)
+	cmds = append(cmds, cmd)
+
+	cmd = m.editComponent.BackgroundUpdate(msg)
+	cmds = append(cmds, cmd)
+
+	switch m.State {
+	case ListState:
+		cmd = m.listComponent.ForegroundUpdate(msg)
+		cmds = append(cmds, cmd)
+	case ViewState:
+		cmd = m.viewComponent.ForegroundUpdate(msg)
+		cmds = append(cmds, cmd)
+	case EditState:
+		cmd = m.editComponent.ForegroundUpdate(msg)
+		cmds = append(cmds, cmd)
+	}
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m *Model) View() string {

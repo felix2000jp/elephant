@@ -40,7 +40,7 @@ func (c *Component) Init() tea.Cmd {
 	return c.HandleInit()
 }
 
-func (c *Component) Update(msg tea.Msg) tea.Cmd {
+func (c *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
@@ -57,6 +57,10 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	cmds = append(cmds, cmd)
 
 	return tea.Batch(cmds...)
+}
+
+func (c *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
+	return nil
 }
 
 func (c *Component) View() string {
