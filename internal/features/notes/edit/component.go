@@ -2,6 +2,7 @@ package edit
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/notes/list"
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
@@ -39,6 +40,9 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		cmd = c.HandleResizeWindow(msg)
+		cmds = append(cmds, cmd)
+	case list.NoteSelectedMsg:
+		cmd = c.HandleListNoteSelectedMsg(msg)
 		cmds = append(cmds, cmd)
 	}
 

@@ -2,7 +2,7 @@ package view
 
 import (
 	"elephant/internal/core"
-	"elephant/internal/features/notes"
+	"elephant/internal/features/notes/list"
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -48,8 +48,8 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	case tea.WindowSizeMsg:
 		cmd = c.HandleResizeWindow(msg)
 		cmds = append(cmds, cmd)
-	case notes.ViewNoteMsg:
-		cmd = c.HandleViewNoteMsg(msg)
+	case list.NoteSelectedMsg:
+		cmd = c.HandleListNoteSelectedMsg(msg)
 		cmds = append(cmds, cmd)
 	}
 
