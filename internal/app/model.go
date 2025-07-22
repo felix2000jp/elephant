@@ -49,6 +49,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
+	if _, ok := msg.(list.NoteSelectedMsg); ok {
+		m.State = ViewState
+	}
+
 	cmd = m.listComponent.BackgroundUpdate(msg)
 	cmds = append(cmds, cmd)
 
