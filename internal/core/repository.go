@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 type Repository interface {
@@ -32,8 +31,6 @@ func (r *NoteRepository) GetAllNotes() ([]Note, error) {
 
 	var notes []Note
 	for _, filePath := range files {
-		title := strings.TrimSuffix(filepath.Base(filePath), ".md")
-
 		content, err := os.ReadFile(filePath)
 		if err != nil {
 			slog.Warn("failed to read file", "file", filePath, "error", err)
@@ -41,26 +38,11 @@ func (r *NoteRepository) GetAllNotes() ([]Note, error) {
 		}
 
 		fileContent := string(content)
-		description := extractDescription(fileContent)
-		notes = append(notes, NewNote(title, description, filePath, fileContent))
+		notes = append(notes, NewNote(filePath, fileContent))
 	}
 
 	slog.Info("loaded notes", "count", len(notes))
 	return notes, nil
-}
-
-func (r *NoteRepository) GetNoteByTitle(title string) (Note, error) {
-	filePath := filepath.Join(r.basePath, title+".md")
-
-	content, err := os.ReadFile(filePath)
-	if err != nil {
-		slog.Error("failed to read note", "file", filePath, "error", err)
-		return Note{}, err
-	}
-
-	fileContent := string(content)
-	description := extractDescription(fileContent)
-	return NewNote(title, description, filePath, fileContent), nil
 }
 
 func (r *NoteRepository) SaveNote(note Note) error {
@@ -71,14 +53,4 @@ func (r *NoteRepository) SaveNote(note Note) error {
 	}
 
 	return nil
-}
-
-func extractDescription(content string) string {
-	for _, line := range strings.Split(content, "\n") {
-		if strings.HasPrefix(line, "# ") {
-			return strings.TrimPrefix(line, "# ")
-		}
-	}
-
-	return ""
 }
