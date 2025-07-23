@@ -12,6 +12,8 @@ type Component struct {
 	width, height int
 	textarea      textarea.Model
 	repository    core.Repository
+
+	currentNote core.Note
 }
 
 func NewComponent(repository core.Repository) Component {

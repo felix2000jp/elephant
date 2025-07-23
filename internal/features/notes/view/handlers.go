@@ -1,6 +1,7 @@
 package view
 
 import (
+	"elephant/internal/features/notes/edit"
 	"elephant/internal/features/notes/list"
 	"elephant/internal/theme"
 	tea "github.com/charmbracelet/bubbletea"
@@ -19,6 +20,22 @@ func (c *Component) HandleResizeWindow(msg tea.WindowSizeMsg) tea.Cmd {
 }
 
 func (c *Component) HandleListNoteSelectedMsg(msg list.NoteSelectedMsg) tea.Cmd {
+	c.currentNote = msg.Note
+
+	content, err := c.renderer.Render(msg.Note.FileContent())
+	if err != nil {
+		slog.Error("failed to render markdown", "error", err)
+		c.markdown.SetContent("Could not render content.")
+		return nil
+	}
+
+	c.markdown.SetContent(content)
+	return nil
+}
+
+func (c *Component) HandleQuitNoteTextareaMsg(msg edit.QuitNoteTextareaMsg) tea.Cmd {
+	c.currentNote = msg.Note
+
 	content, err := c.renderer.Render(msg.Note.FileContent())
 	if err != nil {
 		slog.Error("failed to render markdown", "error", err)

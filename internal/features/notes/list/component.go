@@ -2,6 +2,7 @@ package list
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/notes/edit"
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -37,6 +38,8 @@ func (c *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 		cmd = c.HandleResizeWindow(msg)
 	case NotesLoadedMsg:
 		cmd = c.HandleNotesLoaded(msg)
+	case edit.QuitNoteTextareaMsg:
+		cmd = c.HandleQuitNoteTextareaMsg(msg)
 	}
 
 	return cmd

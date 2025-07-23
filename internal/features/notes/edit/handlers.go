@@ -18,6 +18,7 @@ func (c *Component) HandleResizeWindow(msg tea.WindowSizeMsg) tea.Cmd {
 }
 
 func (c *Component) HandleListNoteSelectedMsg(msg list.NoteSelectedMsg) tea.Cmd {
+	c.currentNote = msg.Note
 	c.textarea.SetValue(msg.Note.FileContent())
 	return nil
 }

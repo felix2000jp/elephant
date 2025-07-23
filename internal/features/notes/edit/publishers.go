@@ -1,9 +1,15 @@
 package edit
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"elephant/internal/core"
+	tea "github.com/charmbracelet/bubbletea"
+)
 
-type QuitNoteTextareaMsg struct{}
+type QuitNoteTextareaMsg struct {
+	Note core.Note
+}
 
 func (c *Component) PublishQuitNoteTextareaMsg() tea.Msg {
-	return QuitNoteTextareaMsg{}
+	c.currentNote = core.NewNote(c.currentNote.FilePath(), c.textarea.Value())
+	return QuitNoteTextareaMsg{Note: c.currentNote}
 }

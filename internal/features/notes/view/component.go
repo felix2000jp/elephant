@@ -2,6 +2,7 @@ package view
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/notes/edit"
 	"elephant/internal/features/notes/list"
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -15,6 +16,8 @@ type Component struct {
 	markdown      viewport.Model
 	renderer      *glamour.TermRenderer
 	repository    core.Repository
+
+	currentNote core.Note
 }
 
 func NewComponent(repository core.Repository) Component {
@@ -48,6 +51,8 @@ func (c *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 		cmd = c.HandleResizeWindow(msg)
 	case list.NoteSelectedMsg:
 		cmd = c.HandleListNoteSelectedMsg(msg)
+	case edit.QuitNoteTextareaMsg:
+		cmd = c.HandleQuitNoteTextareaMsg(msg)
 	}
 
 	return cmd
