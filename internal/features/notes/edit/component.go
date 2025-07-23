@@ -30,7 +30,7 @@ func NewComponent(repository core.Repository) Component {
 }
 
 func (c *Component) Init() tea.Cmd {
-	return c.HandleInit()
+	return nil
 }
 
 func (c *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
@@ -51,9 +51,7 @@ func (c *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEsc {
-			return func() tea.Msg {
-				return QuitNoteTextareaMsg{}
-			}
+			return c.PublishQuitNoteTextareaMsg
 		}
 	}
 
