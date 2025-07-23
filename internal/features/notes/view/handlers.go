@@ -7,12 +7,6 @@ import (
 	"log/slog"
 )
 
-func (c *Component) HandleInit() tea.Cmd {
-	return func() tea.Msg {
-		return nil
-	}
-}
-
 func (c *Component) HandleResizeWindow(msg tea.WindowSizeMsg) tea.Cmd {
 	h, v := theme.Style.GetFrameSize()
 
