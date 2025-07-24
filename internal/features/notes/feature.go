@@ -4,7 +4,6 @@ import (
 	"elephant/internal/core"
 	"elephant/internal/features"
 	"elephant/internal/features/notes/edit"
-	"elephant/internal/features/notes/list"
 	"elephant/internal/features/notes/view"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -50,7 +49,7 @@ func (m *Feature) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
-	if _, ok := msg.(list.NoteSelectedMsg); ok {
+	if _, ok := msg.(SelectNoteMsg); ok {
 		m.State = ViewState
 	}
 	if _, ok := msg.(view.QuitNoteMarkdownMsg); ok {
