@@ -3,14 +3,10 @@ package notes
 import "elephant/internal/core"
 
 // ListNotesMsg - show the list of notes in the base path
-type ListNotesMsg struct {
-	Notes []core.Note
-}
+type ListNotesMsg struct{ Notes []core.Note }
 
 // ViewNoteMsg - select a single note to view and edit
-type ViewNoteMsg struct {
-	Note core.Note
-}
+type ViewNoteMsg struct{ Note core.Note }
 
 // QuitViewNoteMsg - quit the view note state
 type QuitViewNoteMsg struct{}
@@ -19,6 +15,4 @@ type QuitViewNoteMsg struct{}
 type EditNoteMsg struct{}
 
 // QuitEditNoteMsg - quit the edit note state
-type QuitEditNoteMsg struct {
-	Note core.Note
-}
+type QuitEditNoteMsg struct{ Note core.Note }
