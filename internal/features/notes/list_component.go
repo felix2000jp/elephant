@@ -14,7 +14,7 @@ type ListComponent struct {
 	repository    core.Repository
 }
 
-func NewComponent(repository core.Repository) ListComponent {
+func NewListComponent(repository core.Repository) ListComponent {
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	lc := ListComponent{
 		list:       itemList,
@@ -39,8 +39,6 @@ func (lc *ListComponent) Init() tea.Cmd {
 }
 
 func (lc *ListComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
-	var cmd tea.Cmd
-
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := theme.Style.GetFrameSize()
@@ -49,7 +47,6 @@ func (lc *ListComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 		lc.height = msg.Height - v
 
 		lc.list.SetSize(lc.width, lc.height)
-		return nil
 
 	case ListNotesMsg:
 		notes := msg.Notes
@@ -61,7 +58,6 @@ func (lc *ListComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 
 		lc.list.Title = "Elephant Notes"
 		lc.list.SetItems(items)
-		return nil
 
 	case QuitEditNoteMsg:
 		items := lc.list.Items()
@@ -76,24 +72,22 @@ func (lc *ListComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 		}
 
 		lc.list.SetItems(items)
-		return nil
 	}
 
-	return cmd
+	return nil
 }
 
 func (lc *ListComponent) ForegroundUpdate(msg tea.Msg) tea.Cmd {
-	var cmd tea.Cmd
-
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEnter && lc.list.FilterState() != list.Filtering {
 			return func() tea.Msg {
 				selectedItem := lc.list.SelectedItem().(core.Note)
-				return SelectNoteMsg{Note: selectedItem}
+				return ViewNoteMsg{Note: selectedItem}
 			}
 		}
 	}
 
+	var cmd tea.Cmd
 	lc.list, cmd = lc.list.Update(msg)
 	return cmd
 }

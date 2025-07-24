@@ -2,9 +2,6 @@ package notes
 
 import (
 	"elephant/internal/core"
-	"elephant/internal/features"
-	"elephant/internal/features/notes/edit"
-	"elephant/internal/features/notes/view"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -18,16 +15,16 @@ const (
 
 type Feature struct {
 	State         State
-	listComponent features.Component
-	viewComponent features.Component
-	editComponent features.Component
+	listComponent *ListComponent
+	viewComponent *ViewComponent
+	editComponent *EditComponent
 }
 
 func NewFeature() Feature {
 	repository := core.NewNoteRepository(".elephant/notes")
-	listComponent := NewComponent(&repository)
-	viewComponent := view.NewComponent(&repository)
-	editComponent := edit.NewComponent(&repository)
+	listComponent := NewListComponent(&repository)
+	viewComponent := NewViewComponent(&repository)
+	editComponent := NewEditComponent(&repository)
 
 	return Feature{
 		State:         ListState,
@@ -49,16 +46,16 @@ func (m *Feature) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
-	if _, ok := msg.(SelectNoteMsg); ok {
+	if _, ok := msg.(ViewNoteMsg); ok {
 		m.State = ViewState
 	}
-	if _, ok := msg.(view.QuitNoteMarkdownMsg); ok {
+	if _, ok := msg.(QuitViewNoteMsg); ok {
 		m.State = ListState
 	}
-	if _, ok := msg.(view.EditNoteContentMsg); ok {
+	if _, ok := msg.(EditNoteMsg); ok {
 		m.State = EditState
 	}
-	if _, ok := msg.(edit.QuitNoteTextareaMsg); ok {
+	if _, ok := msg.(QuitEditNoteMsg); ok {
 		m.State = ViewState
 	}
 

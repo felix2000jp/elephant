@@ -7,13 +7,10 @@ type ListNotesMsg struct {
 	Notes []core.Note
 }
 
-// SelectNoteMsg - select a single note to view and edit
-type SelectNoteMsg struct {
+// ViewNoteMsg - select a single note to view and edit
+type ViewNoteMsg struct {
 	Note core.Note
 }
-
-// ViewNoteMsg - enter the view state for the selected note
-type ViewNoteMsg struct{}
 
 // QuitViewNoteMsg - quit the view note state
 type QuitViewNoteMsg struct{}
