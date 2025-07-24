@@ -34,44 +34,42 @@ go mod tidy # Initialize and download dependencies
 
 ## Project Structure
 
-Elephant uses a **converged feature-based architecture** that leverages Bubble Tea's native event system. Each feature
-is self-contained with a three-part pattern: messages → handlers → model+component.
+Elephant uses a **feature-based architecture** with a flat structure that leverages Bubble Tea's native event system. Each feature contains components that handle different states and share common messages.
 
 ```
 internal/
 ├── core/                        # Domain logic (pure Go, no UI dependencies)
 │   ├── note.go                  # Note entity
-│   └── repository.go            # File system operations
+│   ├── repository.go            # File system operations
+│   └── repository_test.go       # Repository tests
 ├── features/                    # Feature modules
-│   ├── notes/                   
-│   │   ├── list/                # List notes feature
-│   │   │   ├── messages.go      # Messages
-│   │   │   ├── handlers.go      # Message handlers
-│   │   │   ├── component.go     # Feature model + component
-│   │   │   └── list_test.go     # Feature tests
-│   │   ├── view/                # View note feature
-│   │   │   ├── messages.go      # Messages
-│   │   │   ├── handlers.go      # Message handlers
-│   │   │   ├── component.go     # Feature model + component
-│   │   │   └── view_test.go     # Feature tests
-│   │   ├── edit/                # Edit note feature
-│   │   │   ├── messages.go      # Messages
-│   │   │   ├── handlers.go      # Message handlers
-│   │   │   ├── component.go     # Feature model + component
-│   │   │   └── edit_test.go     # Feature tests
-│   │   └── messages.go          # Shared note messages (Edit, View)
+│   └── notes/                   # Notes feature
+│       ├── feature.go           # Feature orchestrator with state management
+│       ├── list_component.go    # List notes component
+│       ├── view_component.go    # View note component
+│       ├── edit_component.go    # Edit note component
+│       └── messages.go          # Shared messages for all components
+├── theme/                       # UI styling
+│   └── style.go                 # Application styles and themes
 └── app/                         # Application orchestrator
     └── model.go                 # Main model & message router
 ```
 
 ### Architecture Principles
 
+#### Component Structure
+
+- Each component (list, view, edit) is a separate file with its own responsibilities
+- The `feature.go` file orchestrates state transitions and component coordination
+- Components have both `ForegroundUpdate` (when active) and `BackgroundUpdate` (when inactive) methods
+- State management is centralized in the feature orchestrator
+
 #### Message Flow
 
-- App layer routes messages to appropriate features
-- Features handle their own messages via handlers
-- Cross-feature communication happens through the app layer
-- Shared concerns (like window resize) are forwarded to all relevant features
+- App layer routes messages to the notes feature
+- Feature orchestrator manages state transitions based on messages (ViewNoteMsg, EditNoteMsg, etc.)
+- Components handle their own specific UI updates and user interactions
+- Shared messages are defined in `messages.go` for cross-component communication
 
 ## Notes
 
