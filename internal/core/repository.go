@@ -45,6 +45,19 @@ func (r *NoteRepository) GetAllNotes() ([]Note, error) {
 	return notes, nil
 }
 
+func (r *NoteRepository) GetNoteByTitle(title string) (Note, error) {
+	fileName := title + ".md"
+	filePath := filepath.Join(r.basePath, fileName)
+
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		slog.Error("failed to read note by title", "title", title, "file", filePath, "error", err)
+		return Note{}, err
+	}
+
+	return NewNote(filePath, string(content)), nil
+}
+
 func (r *NoteRepository) SaveNote(note Note) error {
 	err := os.WriteFile(note.FilePath(), []byte(note.FileContent()), 0644)
 	if err != nil {
