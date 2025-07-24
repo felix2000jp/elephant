@@ -48,6 +48,42 @@ func TestNoteRepository(t *testing.T) {
 		}
 	})
 
+	t.Run("GetNoteByTitle", func(t *testing.T) {
+		tmpDir := createTempDir(t)
+		defer removeTempDir(t, tmpDir)
+
+		expectedTitle := "test_note"
+		expectedContent := "# Test Note Title\nThis is the test note content"
+		testFile := filepath.Join(tmpDir, expectedTitle+".md")
+
+		err := os.WriteFile(testFile, []byte(expectedContent), 0644)
+		if err != nil {
+			t.Fatalf("Failed to create test file: %v", err)
+		}
+
+		service := NewNoteRepository(tmpDir)
+		note, err := service.GetNoteByTitle(expectedTitle)
+		if err != nil {
+			t.Fatalf("GetNoteByTitle failed: %v", err)
+		}
+
+		if note.Title() != expectedTitle {
+			t.Errorf("Expected title '%s', got '%s'", expectedTitle, note.Title())
+		}
+
+		if note.FileContent() != expectedContent {
+			t.Errorf("Expected content '%s', got '%s'", expectedContent, note.FileContent())
+		}
+
+		if note.Description() != "Test Note Title" {
+			t.Errorf("Expected description 'Test Note Title', got '%s'", note.Description())
+		}
+
+		if note.FilePath() != testFile {
+			t.Errorf("Expected file path '%s', got '%s'", testFile, note.FilePath())
+		}
+	})
+
 	t.Run("SaveNote", func(t *testing.T) {
 		tmpDir := createTempDir(t)
 		defer removeTempDir(t, tmpDir)
