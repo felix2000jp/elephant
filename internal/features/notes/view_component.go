@@ -9,7 +9,7 @@ import (
 	"log/slog"
 )
 
-type ViewComponent struct {
+type viewComponent struct {
 	width, height int
 	markdown      viewport.Model
 	renderer      *glamour.TermRenderer
@@ -18,7 +18,7 @@ type ViewComponent struct {
 	currentNote core.Note
 }
 
-func NewViewComponent(repository core.Repository) ViewComponent {
+func newViewComponent(repository core.Repository) viewComponent {
 	renderer, err := glamour.NewTermRenderer(glamour.WithAutoStyle(), glamour.WithWordWrap(120))
 	if err != nil {
 		slog.Error("failed to initialize markdown renderer", "error", err)
@@ -26,7 +26,7 @@ func NewViewComponent(repository core.Repository) ViewComponent {
 	}
 
 	vp := viewport.New(0, 0)
-	vc := ViewComponent{
+	vc := viewComponent{
 		markdown:   vp,
 		renderer:   renderer,
 		width:      vp.Width,
@@ -37,11 +37,11 @@ func NewViewComponent(repository core.Repository) ViewComponent {
 	return vc
 }
 
-func (vc *ViewComponent) Init() tea.Cmd {
+func (vc *viewComponent) init() tea.Cmd {
 	return nil
 }
 
-func (vc *ViewComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
+func (vc *viewComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := theme.Style.GetFrameSize()
@@ -80,7 +80,7 @@ func (vc *ViewComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (vc *ViewComponent) ForegroundUpdate(msg tea.Msg) tea.Cmd {
+func (vc *viewComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEsc {
 			return func() tea.Msg {
@@ -99,7 +99,7 @@ func (vc *ViewComponent) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (vc *ViewComponent) View() string {
+func (vc *viewComponent) view() string {
 	markdownView := vc.markdown.View()
 	return theme.Style.Width(vc.width).Height(vc.height).Render(markdownView)
 }

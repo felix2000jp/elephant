@@ -15,30 +15,30 @@ const (
 
 type Feature struct {
 	State         State
-	listComponent *ListComponent
-	viewComponent *ViewComponent
-	editComponent *EditComponent
+	listComponent *listComponent
+	viewComponent *viewComponent
+	editComponent *editComponent
 }
 
 func NewFeature() Feature {
 	repository := core.NewNoteRepository(".elephant/notes")
-	listComponent := NewListComponent(&repository)
-	viewComponent := NewViewComponent(&repository)
-	editComponent := NewEditComponent(&repository)
+	list := newListComponent(&repository)
+	view := newViewComponent(&repository)
+	edit := newEditComponent(&repository)
 
 	return Feature{
 		State:         ListState,
-		listComponent: &listComponent,
-		viewComponent: &viewComponent,
-		editComponent: &editComponent,
+		listComponent: &list,
+		viewComponent: &view,
+		editComponent: &edit,
 	}
 }
 
 func (m *Feature) Init() tea.Cmd {
 	return tea.Batch(
-		m.listComponent.Init(),
-		m.viewComponent.Init(),
-		m.editComponent.Init(),
+		m.listComponent.init(),
+		m.viewComponent.init(),
+		m.editComponent.init(),
 	)
 }
 
@@ -61,23 +61,23 @@ func (m *Feature) Update(msg tea.Msg) tea.Cmd {
 
 	switch m.State {
 	case ListState:
-		cmd = m.listComponent.ForegroundUpdate(msg)
+		cmd = m.listComponent.foregroundUpdate(msg)
 		cmds = append(cmds, cmd)
 	case ViewState:
-		cmd = m.viewComponent.ForegroundUpdate(msg)
+		cmd = m.viewComponent.foregroundUpdate(msg)
 		cmds = append(cmds, cmd)
 	case EditState:
-		cmd = m.editComponent.ForegroundUpdate(msg)
+		cmd = m.editComponent.foregroundUpdate(msg)
 		cmds = append(cmds, cmd)
 	}
 
-	cmd = m.listComponent.BackgroundUpdate(msg)
+	cmd = m.listComponent.backgroundUpdate(msg)
 	cmds = append(cmds, cmd)
 
-	cmd = m.viewComponent.BackgroundUpdate(msg)
+	cmd = m.viewComponent.backgroundUpdate(msg)
 	cmds = append(cmds, cmd)
 
-	cmd = m.editComponent.BackgroundUpdate(msg)
+	cmd = m.editComponent.backgroundUpdate(msg)
 	cmds = append(cmds, cmd)
 
 	return tea.Batch(cmds...)
@@ -86,11 +86,11 @@ func (m *Feature) Update(msg tea.Msg) tea.Cmd {
 func (m *Feature) View() string {
 	switch m.State {
 	case ListState:
-		return m.listComponent.View()
+		return m.listComponent.view()
 	case ViewState:
-		return m.viewComponent.View()
+		return m.viewComponent.view()
 	case EditState:
-		return m.editComponent.View()
+		return m.editComponent.view()
 	default:
 		return "Could not render application"
 	}

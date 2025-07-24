@@ -8,15 +8,15 @@ import (
 	"log/slog"
 )
 
-type ListComponent struct {
+type listComponent struct {
 	width, height int
 	list          list.Model
 	repository    core.Repository
 }
 
-func NewListComponent(repository core.Repository) ListComponent {
+func newListComponent(repository core.Repository) listComponent {
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
-	lc := ListComponent{
+	lc := listComponent{
 		list:       itemList,
 		width:      itemList.Width(),
 		height:     itemList.Height(),
@@ -26,7 +26,7 @@ func NewListComponent(repository core.Repository) ListComponent {
 	return lc
 }
 
-func (lc *ListComponent) Init() tea.Cmd {
+func (lc *listComponent) init() tea.Cmd {
 	return func() tea.Msg {
 		notes, err := lc.repository.GetAllNotes()
 		if err != nil {
@@ -38,7 +38,7 @@ func (lc *ListComponent) Init() tea.Cmd {
 	}
 }
 
-func (lc *ListComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
+func (lc *listComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := theme.Style.GetFrameSize()
@@ -77,7 +77,7 @@ func (lc *ListComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (lc *ListComponent) ForegroundUpdate(msg tea.Msg) tea.Cmd {
+func (lc *listComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEnter && lc.list.FilterState() != list.Filtering {
 			return func() tea.Msg {
@@ -92,7 +92,7 @@ func (lc *ListComponent) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (lc *ListComponent) View() string {
+func (lc *listComponent) view() string {
 	listView := lc.list.View()
 	return theme.Style.Width(lc.width).Height(lc.height).Render(listView)
 }

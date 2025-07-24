@@ -7,7 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type EditComponent struct {
+type editComponent struct {
 	width, height int
 	textarea      textarea.Model
 	repository    core.Repository
@@ -15,12 +15,12 @@ type EditComponent struct {
 	currentNote core.Note
 }
 
-func NewEditComponent(repository core.Repository) EditComponent {
+func newEditComponent(repository core.Repository) editComponent {
 	ta := textarea.New()
 	ta.Focus()
 	ta.ShowLineNumbers = false
 
-	ec := EditComponent{
+	ec := editComponent{
 		width:      ta.Width(),
 		height:     ta.Height(),
 		textarea:   ta,
@@ -30,11 +30,11 @@ func NewEditComponent(repository core.Repository) EditComponent {
 	return ec
 }
 
-func (ec *EditComponent) Init() tea.Cmd {
+func (ec *editComponent) init() tea.Cmd {
 	return nil
 }
 
-func (ec *EditComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
+func (ec *editComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := theme.Style.GetFrameSize()
@@ -54,7 +54,7 @@ func (ec *EditComponent) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (ec *EditComponent) ForegroundUpdate(msg tea.Msg) tea.Cmd {
+func (ec *editComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEsc {
 			return func() tea.Msg {
@@ -69,7 +69,7 @@ func (ec *EditComponent) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (ec *EditComponent) View() string {
+func (ec *editComponent) view() string {
 	listView := ec.textarea.View()
 	return theme.Style.Width(ec.width).Height(ec.height).Render(listView)
 }
