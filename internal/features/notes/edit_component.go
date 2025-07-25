@@ -18,6 +18,7 @@ type editComponent struct {
 func newEditComponent(repository core.Repository) editComponent {
 	ta := textarea.New()
 	ta.Focus()
+	ta.Prompt = ""
 	ta.ShowLineNumbers = false
 
 	ec := editComponent{
