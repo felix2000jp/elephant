@@ -31,7 +31,7 @@ func (m *mockRepository) GetNoteByTitle(title string) (core.Note, error) {
 	return core.Note{}, errors.New("note not found")
 }
 
-func (m *mockRepository) SaveNote(note core.Note) error {
+func (m *mockRepository) SaveNote(_ core.Note) error {
 	return m.err
 }
 
