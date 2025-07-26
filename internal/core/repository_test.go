@@ -107,6 +107,65 @@ func TestNoteRepository(t *testing.T) {
 			t.Errorf("Expected saved content '%s', got '%s'", content, string(savedContent))
 		}
 	})
+
+	t.Run("CreateEmptyNote", func(t *testing.T) {
+		tmpDir := createTempDir(t)
+		defer removeTempDir(t, tmpDir)
+
+		filename := "new_note"
+		service := NewNoteRepository(tmpDir)
+		note, err := service.CreateEmptyNote(filename)
+		if err != nil {
+			t.Fatalf("CreateEmptyNote failed: %v", err)
+		}
+
+		expectedPath := filepath.Join(tmpDir, filename+".md")
+		if note.FilePath() != expectedPath {
+			t.Errorf("Expected file path '%s', got '%s'", expectedPath, note.FilePath())
+		}
+
+		if note.Title() != filename {
+			t.Errorf("Expected title '%s', got '%s'", filename, note.Title())
+		}
+
+		if note.FileContent() != "" {
+			t.Errorf("Expected empty content, got '%s'", note.FileContent())
+		}
+
+		if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
+			t.Error("Expected file to be created, but it doesn't exist")
+		}
+
+		content, err := os.ReadFile(expectedPath)
+		if err != nil {
+			t.Fatalf("Failed to read created file: %v", err)
+		}
+
+		if string(content) != "" {
+			t.Errorf("Expected empty file content, got '%s'", string(content))
+		}
+	})
+
+	t.Run("CreateEmptyNote with extension", func(t *testing.T) {
+		tmpDir := createTempDir(t)
+		defer removeTempDir(t, tmpDir)
+
+		filename := "note_with_ext.md"
+		service := NewNoteRepository(tmpDir)
+		note, err := service.CreateEmptyNote(filename)
+		if err != nil {
+			t.Fatalf("CreateEmptyNote with extension failed: %v", err)
+		}
+
+		expectedPath := filepath.Join(tmpDir, filename)
+		if note.FilePath() != expectedPath {
+			t.Errorf("Expected file path '%s', got '%s'", expectedPath, note.FilePath())
+		}
+
+		if note.Title() != "note_with_ext" {
+			t.Errorf("Expected title 'note_with_ext', got '%s'", note.Title())
+		}
+	})
 }
 
 func createTempDir(t *testing.T) string {

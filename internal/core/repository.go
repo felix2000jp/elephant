@@ -10,6 +10,7 @@ type Repository interface {
 	GetAllNotes() ([]Note, error)
 	GetNoteByTitle(title string) (Note, error)
 	SaveNote(note Note) error
+	CreateEmptyNote(filename string) (Note, error)
 }
 
 type NoteRepository struct {
@@ -66,4 +67,20 @@ func (r *NoteRepository) SaveNote(note Note) error {
 	}
 
 	return nil
+}
+
+func (r *NoteRepository) CreateEmptyNote(filename string) (Note, error) {
+	if filepath.Ext(filename) != ".md" {
+		filename = filename + ".md"
+	}
+
+	filePath := filepath.Join(r.basePath, filename)
+
+	err := os.WriteFile(filePath, []byte(""), 0644)
+	if err != nil {
+		slog.Error("failed to create empty note", "file", filePath, "error", err)
+		return Note{}, err
+	}
+
+	return NewNote(filePath, ""), nil
 }
