@@ -48,7 +48,6 @@ internal/
 │       ├── list_component.go    # List notes component
 │       ├── view_component.go    # View note component
 │       ├── edit_component.go    # Edit note component
-│       └── messages.go          # Shared messages for all components
 ├── theme/                       # UI styling
 │   └── style.go                 # Application styles and themes
 └── app/                         # Application orchestrator
