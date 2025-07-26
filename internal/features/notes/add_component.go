@@ -25,7 +25,7 @@ func newAddComponent(repository core.Repository) addComponent {
 }
 
 func (ac *addComponent) init() tea.Cmd {
-	return textinput.Blink
+	return nil
 }
 
 func (ac *addComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
@@ -37,10 +37,12 @@ func (ac *addComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 
 	case CreateNoteMsg:
 		note, err := ac.repository.CreateEmptyNote(msg.Filename)
-		if err == nil {
-			return func() tea.Msg {
-				return ViewNoteMsg{Note: note}
-			}
+		if err != nil {
+			return nil
+		}
+
+		return func() tea.Msg {
+			return ViewNoteMsg{Note: note}
 		}
 	}
 
