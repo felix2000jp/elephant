@@ -5,6 +5,7 @@ import (
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"log/slog"
 )
 
 type addComponent struct {
@@ -36,12 +37,13 @@ func (ac *addComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 		ac.height = msg.Height - v
 
 	case CreateNoteMsg:
-		note, err := ac.repository.CreateEmptyNote(msg.Filename)
-		if err != nil {
-			return nil
-		}
-
 		return func() tea.Msg {
+			note, err := ac.repository.CreateEmptyNote(msg.Filename)
+			if err != nil {
+				slog.Error("failed to create note", "error", err)
+				return nil
+			}
+
 			return ViewNoteMsg{Note: note}
 		}
 	}

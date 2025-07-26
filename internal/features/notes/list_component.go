@@ -72,6 +72,17 @@ func (lc *listComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 		}
 
 		lc.list.SetItems(items)
+
+	case CreateNoteMsg:
+		return func() tea.Msg {
+			notes, err := lc.repository.GetAllNotes()
+			if err != nil {
+				slog.Error("failed to load notes", "error", err)
+				return ListNotesMsg{}
+			}
+
+			return ListNotesMsg{Notes: notes}
+		}
 	}
 
 	return nil
