@@ -35,6 +35,13 @@ func (m *mockRepository) SaveNote(_ core.Note) error {
 	return m.err
 }
 
+func (m *mockRepository) CreateEmptyNote(filename string) (core.Note, error) {
+	if m.err != nil {
+		return core.Note{}, m.err
+	}
+	return core.NewNote(filename+".md", ""), nil
+}
+
 func TestNewListComponent(t *testing.T) {
 	mockRepo := &mockRepository{}
 	component := newListComponent(mockRepo)

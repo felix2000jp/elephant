@@ -20,12 +20,22 @@ type EditNoteMsg struct{}
 // QuitEditNoteMsg - quit the edit note state
 type QuitEditNoteMsg struct{ Note core.Note }
 
+// AddNoteMsg - enter the add note state
+type AddNoteMsg struct{}
+
+// CreateNoteMsg - create a new note with the given filename and enter edit state
+type CreateNoteMsg struct{ Filename string }
+
+// QuitAddNoteMsg - quit the add note state
+type QuitAddNoteMsg struct{}
+
 type State int
 
 const (
 	ListState State = iota
 	ViewState
 	EditState
+	AddState
 )
 
 type Feature struct {
@@ -33,6 +43,7 @@ type Feature struct {
 	listComponent *listComponent
 	viewComponent *viewComponent
 	editComponent *editComponent
+	addComponent  *addComponent
 }
 
 func NewFeature() Feature {
@@ -40,12 +51,14 @@ func NewFeature() Feature {
 	list := newListComponent(&repository)
 	view := newViewComponent(&repository)
 	edit := newEditComponent(&repository)
+	add := newAddComponent(&repository)
 
 	return Feature{
 		State:         ListState,
 		listComponent: &list,
 		viewComponent: &view,
 		editComponent: &edit,
+		addComponent:  &add,
 	}
 }
 
@@ -54,6 +67,7 @@ func (m *Feature) Init() tea.Cmd {
 		m.listComponent.init(),
 		m.viewComponent.init(),
 		m.editComponent.init(),
+		m.addComponent.init(),
 	)
 }
 
@@ -73,6 +87,12 @@ func (m *Feature) Update(msg tea.Msg) tea.Cmd {
 	if _, ok := msg.(QuitEditNoteMsg); ok {
 		m.State = ViewState
 	}
+	if _, ok := msg.(AddNoteMsg); ok {
+		m.State = AddState
+	}
+	if _, ok := msg.(QuitAddNoteMsg); ok {
+		m.State = ListState
+	}
 
 	switch m.State {
 	case ListState:
@@ -84,6 +104,9 @@ func (m *Feature) Update(msg tea.Msg) tea.Cmd {
 	case EditState:
 		cmd = m.editComponent.foregroundUpdate(msg)
 		cmds = append(cmds, cmd)
+	case AddState:
+		cmd = m.addComponent.foregroundUpdate(msg)
+		cmds = append(cmds, cmd)
 	}
 
 	cmd = m.listComponent.backgroundUpdate(msg)
@@ -93,6 +116,9 @@ func (m *Feature) Update(msg tea.Msg) tea.Cmd {
 	cmds = append(cmds, cmd)
 
 	cmd = m.editComponent.backgroundUpdate(msg)
+	cmds = append(cmds, cmd)
+
+	cmd = m.addComponent.backgroundUpdate(msg)
 	cmds = append(cmds, cmd)
 
 	return tea.Batch(cmds...)
@@ -106,6 +132,8 @@ func (m *Feature) View() string {
 		return m.viewComponent.view()
 	case EditState:
 		return m.editComponent.view()
+	case AddState:
+		return m.addComponent.view()
 	default:
 		return "Could not render application"
 	}

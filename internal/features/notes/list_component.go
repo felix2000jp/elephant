@@ -85,6 +85,11 @@ func (lc *listComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 				return ViewNoteMsg{Note: selectedItem}
 			}
 		}
+		if keyMsg.Type == tea.KeyRunes && len(keyMsg.Runes) > 0 && keyMsg.Runes[0] == 'n' && lc.list.FilterState() != list.Filtering {
+			return func() tea.Msg {
+				return AddNoteMsg{}
+			}
+		}
 	}
 
 	var cmd tea.Cmd
