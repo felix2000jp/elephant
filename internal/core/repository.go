@@ -75,12 +75,13 @@ func (r *NoteRepository) CreateEmptyNote(filename string) (Note, error) {
 	}
 
 	filePath := filepath.Join(r.basePath, filename)
+	content := "# " + filename
 
-	err := os.WriteFile(filePath, []byte(""), 0644)
+	err := os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {
 		slog.Error("failed to create empty note", "file", filePath, "error", err)
 		return Note{}, err
 	}
 
-	return NewNote(filePath, ""), nil
+	return NewNote(filePath, content), nil
 }

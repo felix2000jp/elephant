@@ -128,8 +128,8 @@ func TestNoteRepository(t *testing.T) {
 			t.Errorf("Expected title '%s', got '%s'", filename, note.Title())
 		}
 
-		if note.FileContent() != "" {
-			t.Errorf("Expected empty content, got '%s'", note.FileContent())
+		if note.FileContent() != "# new_note.md" {
+			t.Errorf("Expected content '# new_note.md', got '%s'", note.FileContent())
 		}
 
 		if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
@@ -141,8 +141,8 @@ func TestNoteRepository(t *testing.T) {
 			t.Fatalf("Failed to read created file: %v", err)
 		}
 
-		if string(content) != "" {
-			t.Errorf("Expected empty file content, got '%s'", string(content))
+		if string(content) != "# new_note.md" {
+			t.Errorf("Expected '# new_note.md' content, got '%s'", string(content))
 		}
 	})
 
@@ -164,6 +164,10 @@ func TestNoteRepository(t *testing.T) {
 
 		if note.Title() != "note_with_ext" {
 			t.Errorf("Expected title 'note_with_ext', got '%s'", note.Title())
+		}
+
+		if note.FileContent() != "# note_with_ext.md" {
+			t.Errorf("Expected content '# note_with_ext.md', got '%s'", note.FileContent())
 		}
 	})
 }
