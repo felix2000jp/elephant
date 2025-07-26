@@ -163,6 +163,58 @@ func TestListComponentBackgroundUpdate(t *testing.T) {
 			t.Error("Expected second note to remain unchanged")
 		}
 	})
+
+	t.Run("CreateNoteMsg reloads notes from repository", func(t *testing.T) {
+		note1 := core.NewNote("note1.md", "# Note 1\nContent 1")
+		note2 := core.NewNote("note2.md", "# Note 2\nContent 2")
+		mockRepo := &mockRepository{
+			notes: []core.Note{note1, note2},
+		}
+
+		component := newListComponent(mockRepo)
+		msg := CreateNoteMsg{Filename: "newnote"}
+
+		cmd := component.backgroundUpdate(msg)
+
+		if cmd == nil {
+			t.Fatal("Expected backgroundUpdate to return a command for CreateNoteMsg")
+		}
+
+		result := cmd()
+		listMsg, ok := result.(ListNotesMsg)
+		if !ok {
+			t.Fatal("Expected ListNotesMsg from CreateNoteMsg command")
+		}
+
+		if len(listMsg.Notes) != 2 {
+			t.Errorf("Expected 2 notes, got %d", len(listMsg.Notes))
+		}
+	})
+
+	t.Run("CreateNoteMsg handles repository error gracefully", func(t *testing.T) {
+		mockRepo := &mockRepository{
+			err: errors.New("repository error"),
+		}
+
+		component := newListComponent(mockRepo)
+		msg := CreateNoteMsg{Filename: "newnote"}
+
+		cmd := component.backgroundUpdate(msg)
+
+		if cmd == nil {
+			t.Fatal("Expected backgroundUpdate to return a command for CreateNoteMsg")
+		}
+
+		result := cmd()
+		listMsg, ok := result.(ListNotesMsg)
+		if !ok {
+			t.Fatal("Expected ListNotesMsg from CreateNoteMsg command")
+		}
+
+		if len(listMsg.Notes) != 0 {
+			t.Error("Expected empty notes slice when repository fails")
+		}
+	})
 }
 
 func TestListComponentForegroundUpdate(t *testing.T) {
@@ -210,6 +262,46 @@ func TestListComponentForegroundUpdate(t *testing.T) {
 			msg := cmd()
 			if _, ok := msg.(ViewNoteMsg); ok {
 				t.Error("Expected no ViewNoteMsg during filtering mode")
+			}
+		}
+	})
+
+	t.Run("'n' key creates AddNoteMsg", func(t *testing.T) {
+		mockRepo := &mockRepository{}
+		component := newListComponent(mockRepo)
+
+		keyMsg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'n'}}
+		cmd := component.foregroundUpdate(keyMsg)
+
+		if cmd == nil {
+			t.Fatal("Expected foregroundUpdate to return a command for 'n' key")
+		}
+
+		msg := cmd()
+		_, ok := msg.(AddNoteMsg)
+		if !ok {
+			t.Error("Expected AddNoteMsg from 'n' key command")
+		}
+	})
+
+	t.Run("'n' key during filtering does not create AddNoteMsg", func(t *testing.T) {
+		mockRepo := &mockRepository{}
+		component := newListComponent(mockRepo)
+
+		note1 := core.NewNote("note1.md", "# Note 1\nContent 1")
+		listMsg := ListNotesMsg{Notes: []core.Note{note1}}
+		component.backgroundUpdate(listMsg)
+
+		filterKeyMsg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'/'}}
+		component.foregroundUpdate(filterKeyMsg)
+
+		keyMsg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'n'}}
+		cmd := component.foregroundUpdate(keyMsg)
+
+		if cmd != nil {
+			msg := cmd()
+			if _, ok := msg.(AddNoteMsg); ok {
+				t.Error("Expected no AddNoteMsg during filtering mode")
 			}
 		}
 	})
