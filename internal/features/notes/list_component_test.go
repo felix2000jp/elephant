@@ -50,6 +50,10 @@ func TestNewListComponent(t *testing.T) {
 		t.Error("Expected repository to be set correctly")
 	}
 
+	if component.list.Title != "Elephant Notes" {
+		t.Errorf("Expected title to be 'Elephant Notes', got '%s'", component.list.Title)
+	}
+
 	if component.width != 0 || component.height != 0 {
 		t.Error("Expected initial dimensions to be 0")
 	}
@@ -120,10 +124,6 @@ func TestListComponentBackgroundUpdate(t *testing.T) {
 			t.Error("Expected backgroundUpdate to return nil for ListNotesMsg")
 		}
 
-		if component.list.Title != "Elephant Notes" {
-			t.Errorf("Expected title to be 'Elephant Notes', got '%s'", component.list.Title)
-		}
-
 		items := component.list.Items()
 		if len(items) != 2 {
 			t.Errorf("Expected 2 items in list, got %d", len(items))
@@ -164,55 +164,32 @@ func TestListComponentBackgroundUpdate(t *testing.T) {
 		}
 	})
 
-	t.Run("CreateNoteMsg reloads notes from repository", func(t *testing.T) {
+	t.Run("CreateNoteMsg adds note to existing list", func(t *testing.T) {
+		mockRepo := &mockRepository{}
+		component := newListComponent(mockRepo)
+
 		note1 := core.NewNote("note1.md", "# Note 1\nContent 1")
 		note2 := core.NewNote("note2.md", "# Note 2\nContent 2")
-		mockRepo := &mockRepository{
-			notes: []core.Note{note1, note2},
+		listMsg := ListNotesMsg{Notes: []core.Note{note1, note2}}
+		component.backgroundUpdate(listMsg)
+
+		newNote := core.NewNote("newnote.md", "# New Note\nNew content")
+		createMsg := CreateNoteMsg{Note: newNote}
+
+		cmd := component.backgroundUpdate(createMsg)
+
+		if cmd != nil {
+			t.Error("Expected backgroundUpdate to return nil for CreateNoteMsg")
 		}
 
-		component := newListComponent(mockRepo)
-		msg := CreateNoteMsg{Filename: "newnote"}
-
-		cmd := component.backgroundUpdate(msg)
-
-		if cmd == nil {
-			t.Fatal("Expected backgroundUpdate to return a command for CreateNoteMsg")
+		items := component.list.Items()
+		if len(items) != 3 {
+			t.Errorf("Expected 3 items in list, got %d", len(items))
 		}
 
-		result := cmd()
-		listMsg, ok := result.(ListNotesMsg)
-		if !ok {
-			t.Fatal("Expected ListNotesMsg from CreateNoteMsg command")
-		}
-
-		if len(listMsg.Notes) != 2 {
-			t.Errorf("Expected 2 notes, got %d", len(listMsg.Notes))
-		}
-	})
-
-	t.Run("CreateNoteMsg handles repository error gracefully", func(t *testing.T) {
-		mockRepo := &mockRepository{
-			err: errors.New("repository error"),
-		}
-
-		component := newListComponent(mockRepo)
-		msg := CreateNoteMsg{Filename: "newnote"}
-
-		cmd := component.backgroundUpdate(msg)
-
-		if cmd == nil {
-			t.Fatal("Expected backgroundUpdate to return a command for CreateNoteMsg")
-		}
-
-		result := cmd()
-		listMsg, ok := result.(ListNotesMsg)
-		if !ok {
-			t.Fatal("Expected ListNotesMsg from CreateNoteMsg command")
-		}
-
-		if len(listMsg.Notes) != 0 {
-			t.Error("Expected empty notes slice when repository fails")
+		addedNote := items[2].(core.Note)
+		if addedNote.Title() != "newnote" {
+			t.Errorf("Expected added note title 'newnote', got '%s'", addedNote.Title())
 		}
 	})
 }

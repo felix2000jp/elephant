@@ -16,6 +16,8 @@ type listComponent struct {
 
 func newListComponent(repository core.Repository) listComponent {
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
+	itemList.Title = "Elephant Notes"
+
 	lc := listComponent{
 		list:       itemList,
 		width:      itemList.Width(),
@@ -56,7 +58,6 @@ func (lc *listComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 			items[i] = note
 		}
 
-		lc.list.Title = "Elephant Notes"
 		lc.list.SetItems(items)
 
 	case QuitEditNoteMsg:
@@ -74,15 +75,8 @@ func (lc *listComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 		lc.list.SetItems(items)
 
 	case CreateNoteMsg:
-		return func() tea.Msg {
-			notes, err := lc.repository.GetAllNotes()
-			if err != nil {
-				slog.Error("failed to load notes", "error", err)
-				return ListNotesMsg{}
-			}
-
-			return ListNotesMsg{Notes: notes}
-		}
+		totalItems := append(lc.list.Items(), msg.Note)
+		lc.list.SetItems(totalItems)
 	}
 
 	return nil

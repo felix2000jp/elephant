@@ -38,13 +38,7 @@ func (ac *addComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 
 	case CreateNoteMsg:
 		return func() tea.Msg {
-			note, err := ac.repository.CreateEmptyNote(msg.Filename)
-			if err != nil {
-				slog.Error("failed to create note", "error", err)
-				return nil
-			}
-
-			return ViewNoteMsg{Note: note}
+			return ViewNoteMsg{Note: msg.Note}
 		}
 	}
 
@@ -62,7 +56,13 @@ func (ac *addComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 			filename := ac.textInput.Value()
 			if filename != "" {
 				return func() tea.Msg {
-					return CreateNoteMsg{Filename: filename}
+					note, err := ac.repository.CreateEmptyNote(filename)
+					if err != nil {
+						slog.Error("failed to create note", "error", err)
+						return nil
+					}
+
+					return CreateNoteMsg{Note: note}
 				}
 			}
 		}

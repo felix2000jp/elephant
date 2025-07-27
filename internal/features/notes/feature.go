@@ -23,8 +23,8 @@ type QuitEditNoteMsg struct{ Note core.Note }
 // AddNoteMsg - enter the add note state
 type AddNoteMsg struct{}
 
-// CreateNoteMsg - create a new note with the given filename and enter edit state
-type CreateNoteMsg struct{ Filename string }
+// CreateNoteMsg - create a new note with the given filename
+type CreateNoteMsg struct{ Note core.Note }
 
 // QuitAddNoteMsg - quit the add note state
 type QuitAddNoteMsg struct{}

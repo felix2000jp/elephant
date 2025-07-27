@@ -1,6 +1,7 @@
 package notes
 
 import (
+	"elephant/internal/core"
 	"errors"
 	tea "github.com/charmbracelet/bubbletea"
 	"testing"
@@ -39,11 +40,12 @@ func TestAddComponentInit(t *testing.T) {
 }
 
 func TestAddComponentBackgroundUpdate(t *testing.T) {
-	t.Run("CreateNoteMsg creates note and returns ViewNoteMsg", func(t *testing.T) {
+	t.Run("CreateNoteMsg returns ViewNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
 		component := newAddComponent(mockRepo)
 
-		msg := CreateNoteMsg{Filename: "testnote"}
+		note := core.NewNote("testnote.md", "")
+		msg := CreateNoteMsg{Note: note}
 		cmd := component.backgroundUpdate(msg)
 
 		if cmd == nil {
@@ -62,25 +64,6 @@ func TestAddComponentBackgroundUpdate(t *testing.T) {
 
 		if viewMsg.Note.FilePath() != "testnote.md" {
 			t.Errorf("Expected file path 'testnote.md', got '%s'", viewMsg.Note.FilePath())
-		}
-	})
-
-	t.Run("CreateNoteMsg handles repository error gracefully", func(t *testing.T) {
-		mockRepo := &mockRepository{
-			err: errors.New("repository error"),
-		}
-		component := newAddComponent(mockRepo)
-
-		msg := CreateNoteMsg{Filename: "testnote"}
-		cmd := component.backgroundUpdate(msg)
-
-		if cmd == nil {
-			t.Fatal("Expected backgroundUpdate to return a command for CreateNoteMsg")
-		}
-
-		result := cmd()
-		if result != nil {
-			t.Error("Expected nil result when repository fails")
 		}
 	})
 }
@@ -104,7 +87,7 @@ func TestAddComponentForegroundUpdate(t *testing.T) {
 		}
 	})
 
-	t.Run("Enter key with filename creates CreateNoteMsg", func(t *testing.T) {
+	t.Run("Enter key with filename creates note and CreateNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
 		component := newAddComponent(mockRepo)
 
@@ -123,8 +106,33 @@ func TestAddComponentForegroundUpdate(t *testing.T) {
 			t.Fatal("Expected CreateNoteMsg from Enter key command")
 		}
 
-		if createMsg.Filename != "mynote" {
-			t.Errorf("Expected filename 'mynote', got '%s'", createMsg.Filename)
+		if createMsg.Note.Title() != "mynote" {
+			t.Errorf("Expected note title 'mynote', got '%s'", createMsg.Note.Title())
+		}
+
+		if createMsg.Note.FilePath() != "mynote.md" {
+			t.Errorf("Expected note file path 'mynote.md', got '%s'", createMsg.Note.FilePath())
+		}
+	})
+
+	t.Run("Enter key with filename handles repository error gracefully", func(t *testing.T) {
+		mockRepo := &mockRepository{
+			err: errors.New("repository error"),
+		}
+		component := newAddComponent(mockRepo)
+
+		component.textInput.SetValue("mynote")
+
+		keyMsg := tea.KeyMsg{Type: tea.KeyEnter}
+		cmd := component.foregroundUpdate(keyMsg)
+
+		if cmd == nil {
+			t.Fatal("Expected foregroundUpdate to return a command for Enter key with filename")
+		}
+
+		msg := cmd()
+		if msg != nil {
+			t.Error("Expected nil result when repository fails")
 		}
 	})
 
