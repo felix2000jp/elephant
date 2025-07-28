@@ -5,6 +5,7 @@ import (
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
+	"log/slog"
 )
 
 type editComponent struct {
@@ -60,6 +61,13 @@ func (ec *editComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 		if keyMsg.Type == tea.KeyEsc {
 			return func() tea.Msg {
 				ec.currentNote = core.NewNote(ec.currentNote.FilePath(), ec.textarea.Value())
+
+				err := ec.repository.SaveNote(ec.currentNote)
+				if err != nil {
+					slog.Error("failed to save note", "error", err)
+					return nil
+				}
+
 				return QuitEditNoteMsg{Note: ec.currentNote}
 			}
 		}
