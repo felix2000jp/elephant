@@ -4,6 +4,7 @@ import (
 	"elephant/internal/core"
 	"elephant/internal/features/commands"
 	"elephant/internal/theme"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
@@ -14,12 +15,14 @@ type Component struct {
 	width, height int
 	markdown      viewport.Model
 	renderer      *glamour.TermRenderer
+	keyMap        customKeyMap
 	repository    core.Repository
 
 	currentNote core.Note
 }
 
 func NewComponent(repository core.Repository) Component {
+	keyMap := newCustomKeyMap()
 	renderer, err := glamour.NewTermRenderer(glamour.WithAutoStyle(), glamour.WithWordWrap(120))
 	if err != nil {
 		slog.Error("failed to initialize markdown renderer", "error", err)
@@ -27,11 +30,14 @@ func NewComponent(repository core.Repository) Component {
 	}
 
 	vp := viewport.New(0, 0)
+	vp.KeyMap = keyMap.baseKeyMap
+
 	vc := Component{
-		markdown:   vp,
-		renderer:   renderer,
 		width:      vp.Width,
 		height:     vp.Height,
+		markdown:   vp,
+		renderer:   renderer,
+		keyMap:     keyMap,
 		repository: repository,
 	}
 
@@ -83,12 +89,12 @@ func (vc *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 
 func (vc *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		if keyMsg.Type == tea.KeyEsc {
+		switch {
+		case key.Matches(keyMsg, vc.keyMap.quitViewNote):
 			return func() tea.Msg {
 				return commands.QuitViewNoteMsg{}
 			}
-		}
-		if keyMsg.Type == tea.KeyEnter {
+		case key.Matches(keyMsg, vc.keyMap.editNote):
 			return func() tea.Msg {
 				return commands.EditNoteMsg{}
 			}
