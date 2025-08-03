@@ -47,7 +47,7 @@ internal/
 │   │   ├── component.go         # Add note component implementation
 │   │   └── component_test.go    # Add component tests
 │   ├── commands/                # Shared events and messages
-│   │   └── events.go            # Cross-component events for state transitions
+│   │   └── messages.go          # Cross-component messages
 │   ├── edit/                    # Edit note component
 │   │   ├── component.go         # Edit note component implementation
 │   │   └── component_test.go    # Edit component tests
