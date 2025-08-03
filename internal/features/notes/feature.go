@@ -3,6 +3,7 @@ package notes
 import (
 	"elephant/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
+	"os"
 )
 
 // ListNotesMsg - show the list of notes in the base path
@@ -47,7 +48,9 @@ type Feature struct {
 }
 
 func NewFeature() Feature {
-	repository := core.NewNoteRepository(".elephant/notes")
+	notesDirectory := getNotesDirectory()
+
+	repository := core.NewNoteRepository(notesDirectory)
 	list := newListComponent(&repository)
 	view := newViewComponent(&repository)
 	edit := newEditComponent(&repository)
@@ -137,4 +140,11 @@ func (m *Feature) View() string {
 	default:
 		return "Could not render application"
 	}
+}
+
+func getNotesDirectory() string {
+	if dir := os.Getenv("ELEPHANT_NOTES_DIR"); dir != "" {
+		return dir
+	}
+	return ".elephant/notes"
 }
