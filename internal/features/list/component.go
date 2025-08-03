@@ -1,24 +1,25 @@
-package notes
+package list
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/commands"
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"log/slog"
 )
 
-type listComponent struct {
+type Component struct {
 	width, height int
 	list          list.Model
 	repository    core.Repository
 }
 
-func newListComponent(repository core.Repository) listComponent {
+func NewComponent(repository core.Repository) Component {
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	itemList.Title = "Elephant Notes"
 
-	lc := listComponent{
+	lc := Component{
 		list:       itemList,
 		width:      itemList.Width(),
 		height:     itemList.Height(),
@@ -28,19 +29,19 @@ func newListComponent(repository core.Repository) listComponent {
 	return lc
 }
 
-func (lc *listComponent) init() tea.Cmd {
+func (lc *Component) Init() tea.Cmd {
 	return func() tea.Msg {
 		notes, err := lc.repository.GetAllNotes()
 		if err != nil {
 			slog.Error("failed to load notes", "error", err)
-			return ListNotesMsg{}
+			return commands.ListNotesMsg{}
 		}
 
-		return ListNotesMsg{Notes: notes}
+		return commands.ListNotesMsg{Notes: notes}
 	}
 }
 
-func (lc *listComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
+func (lc *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := theme.Style.GetFrameSize()
@@ -50,7 +51,7 @@ func (lc *listComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 
 		lc.list.SetSize(lc.width, lc.height)
 
-	case ListNotesMsg:
+	case commands.ListNotesMsg:
 		notes := msg.Notes
 		items := make([]list.Item, len(notes))
 
@@ -60,7 +61,7 @@ func (lc *listComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 
 		lc.list.SetItems(items)
 
-	case QuitEditNoteMsg:
+	case commands.QuitEditNoteMsg:
 		items := lc.list.Items()
 		updatedNote := msg.Note
 
@@ -74,7 +75,7 @@ func (lc *listComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 
 		lc.list.SetItems(items)
 
-	case CreateNoteMsg:
+	case commands.CreateNoteMsg:
 		totalItems := append(lc.list.Items(), msg.Note)
 		lc.list.SetItems(totalItems)
 	}
@@ -82,17 +83,17 @@ func (lc *listComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (lc *listComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
+func (lc *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEnter && lc.list.FilterState() != list.Filtering {
 			return func() tea.Msg {
 				selectedItem := lc.list.SelectedItem().(core.Note)
-				return ViewNoteMsg{Note: selectedItem}
+				return commands.ViewNoteMsg{Note: selectedItem}
 			}
 		}
 		if keyMsg.Type == tea.KeyRunes && len(keyMsg.Runes) > 0 && keyMsg.Runes[0] == 'n' && lc.list.FilterState() != list.Filtering {
 			return func() tea.Msg {
-				return AddNoteMsg{}
+				return commands.AddNoteMsg{}
 			}
 		}
 	}
@@ -102,7 +103,7 @@ func (lc *listComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (lc *listComponent) view() string {
+func (lc *Component) View() string {
 	listView := lc.list.View()
 	return theme.Style.Width(lc.width).Height(lc.height).Render(listView)
 }

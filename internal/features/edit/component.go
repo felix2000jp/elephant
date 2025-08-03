@@ -1,14 +1,15 @@
-package notes
+package edit
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/commands"
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"log/slog"
 )
 
-type editComponent struct {
+type Component struct {
 	width, height int
 	textarea      textarea.Model
 	repository    core.Repository
@@ -16,13 +17,13 @@ type editComponent struct {
 	currentNote core.Note
 }
 
-func newEditComponent(repository core.Repository) editComponent {
+func NewComponent(repository core.Repository) Component {
 	ta := textarea.New()
 	ta.Focus()
 	ta.Prompt = ""
 	ta.ShowLineNumbers = false
 
-	ec := editComponent{
+	ec := Component{
 		width:      ta.Width(),
 		height:     ta.Height(),
 		textarea:   ta,
@@ -32,11 +33,11 @@ func newEditComponent(repository core.Repository) editComponent {
 	return ec
 }
 
-func (ec *editComponent) init() tea.Cmd {
+func (ec *Component) Init() tea.Cmd {
 	return nil
 }
 
-func (ec *editComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
+func (ec *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := theme.Style.GetFrameSize()
@@ -47,7 +48,7 @@ func (ec *editComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 		ec.textarea.SetWidth(ec.width)
 		ec.textarea.SetHeight(ec.height)
 
-	case ViewNoteMsg:
+	case commands.ViewNoteMsg:
 		ec.currentNote = msg.Note
 		ec.textarea.SetValue(msg.Note.FileContent())
 
@@ -56,7 +57,7 @@ func (ec *editComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (ec *editComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
+func (ec *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEsc {
 			return func() tea.Msg {
@@ -68,7 +69,7 @@ func (ec *editComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 					return nil
 				}
 
-				return QuitEditNoteMsg{Note: ec.currentNote}
+				return commands.QuitEditNoteMsg{Note: ec.currentNote}
 			}
 		}
 	}
@@ -78,7 +79,7 @@ func (ec *editComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (ec *editComponent) view() string {
+func (ec *Component) View() string {
 	listView := ec.textarea.View()
 	return theme.Style.Width(ec.width).Height(ec.height).Render(listView)
 }

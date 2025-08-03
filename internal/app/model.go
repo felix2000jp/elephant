@@ -1,16 +1,16 @@
 package app
 
 import (
-	"elephant/internal/features/notes"
+	"elephant/internal/features"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
-	notesFeature *notes.Feature
+	notesFeature *features.NotesFeature
 }
 
 func NewModel() Model {
-	notesFeature := notes.NewFeature()
+	notesFeature := features.NewFeature()
 
 	return Model{
 		notesFeature: &notesFeature,

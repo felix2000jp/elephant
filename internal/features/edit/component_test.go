@@ -1,14 +1,51 @@
-package notes
+package edit
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/commands"
+	"errors"
 	tea "github.com/charmbracelet/bubbletea"
 	"testing"
 )
 
+type mockRepository struct {
+	notes []core.Note
+	err   error
+}
+
+func (m *mockRepository) GetAllNotes() ([]core.Note, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return m.notes, nil
+}
+
+func (m *mockRepository) GetNoteByTitle(title string) (core.Note, error) {
+	if m.err != nil {
+		return core.Note{}, m.err
+	}
+	for _, note := range m.notes {
+		if note.Title() == title {
+			return note, nil
+		}
+	}
+	return core.Note{}, errors.New("note not found")
+}
+
+func (m *mockRepository) SaveNote(_ core.Note) error {
+	return m.err
+}
+
+func (m *mockRepository) CreateEmptyNote(filename string) (core.Note, error) {
+	if m.err != nil {
+		return core.Note{}, m.err
+	}
+	return core.NewNote(filename+".md", ""), nil
+}
+
 func TestNewEditComponent(t *testing.T) {
 	mockRepo := &mockRepository{}
-	component := newEditComponent(mockRepo)
+	component := NewComponent(mockRepo)
 
 	if component.repository != mockRepo {
 		t.Error("Expected repository to be set correctly")
@@ -26,15 +63,15 @@ func TestNewEditComponent(t *testing.T) {
 func TestEditComponentBackgroundUpdate(t *testing.T) {
 	t.Run("ViewNoteMsg sets current note and textarea content", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newEditComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note := core.NewNote("test.md", "# Test Note\nThis is test content")
-		msg := ViewNoteMsg{Note: note}
+		msg := commands.ViewNoteMsg{Note: note}
 
-		cmd := component.backgroundUpdate(msg)
+		cmd := component.BackgroundUpdate(msg)
 
 		if cmd != nil {
-			t.Error("Expected backgroundUpdate to return nil for ViewNoteMsg")
+			t.Error("Expected BackgroundUpdate to return nil for ViewNoteMsg")
 		}
 
 		if component.currentNote.Title() != "test" {
@@ -54,23 +91,23 @@ func TestEditComponentBackgroundUpdate(t *testing.T) {
 func TestEditComponentForegroundUpdate(t *testing.T) {
 	t.Run("Escape key creates QuitEditNoteMsg with updated content", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newEditComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		originalNote := core.NewNote("test.md", "# Original Content")
-		viewMsg := ViewNoteMsg{Note: originalNote}
-		component.backgroundUpdate(viewMsg)
+		viewMsg := commands.ViewNoteMsg{Note: originalNote}
+		component.BackgroundUpdate(viewMsg)
 
 		component.textarea.SetValue("# Updated Content\nNew text added")
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyEsc}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd == nil {
-			t.Fatal("Expected foregroundUpdate to return a command for Escape key")
+			t.Fatal("Expected ForegroundUpdate to return a command for Escape key")
 		}
 
 		msg := cmd()
-		quitMsg, ok := msg.(QuitEditNoteMsg)
+		quitMsg, ok := msg.(commands.QuitEditNoteMsg)
 		if !ok {
 			t.Fatal("Expected QuitEditNoteMsg from Escape key command")
 		}

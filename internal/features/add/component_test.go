@@ -1,15 +1,51 @@
-package notes
+package add
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/commands"
 	"errors"
 	tea "github.com/charmbracelet/bubbletea"
 	"testing"
 )
 
+type mockRepository struct {
+	notes []core.Note
+	err   error
+}
+
+func (m *mockRepository) GetAllNotes() ([]core.Note, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return m.notes, nil
+}
+
+func (m *mockRepository) GetNoteByTitle(title string) (core.Note, error) {
+	if m.err != nil {
+		return core.Note{}, m.err
+	}
+	for _, note := range m.notes {
+		if note.Title() == title {
+			return note, nil
+		}
+	}
+	return core.Note{}, errors.New("note not found")
+}
+
+func (m *mockRepository) SaveNote(_ core.Note) error {
+	return m.err
+}
+
+func (m *mockRepository) CreateEmptyNote(filename string) (core.Note, error) {
+	if m.err != nil {
+		return core.Note{}, m.err
+	}
+	return core.NewNote(filename+".md", ""), nil
+}
+
 func TestNewAddComponent(t *testing.T) {
 	mockRepo := &mockRepository{}
-	component := newAddComponent(mockRepo)
+	component := NewComponent(mockRepo)
 
 	if component.repository != mockRepo {
 		t.Error("Expected repository to be set correctly")
@@ -30,30 +66,30 @@ func TestNewAddComponent(t *testing.T) {
 
 func TestAddComponentInit(t *testing.T) {
 	mockRepo := &mockRepository{}
-	component := newAddComponent(mockRepo)
+	component := NewComponent(mockRepo)
 
-	cmd := component.init()
+	cmd := component.Init()
 
 	if cmd != nil {
-		t.Error("Expected init to return nil")
+		t.Error("Expected Init to return nil")
 	}
 }
 
 func TestAddComponentBackgroundUpdate(t *testing.T) {
 	t.Run("CreateNoteMsg returns ViewNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newAddComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note := core.NewNote("testnote.md", "")
-		msg := CreateNoteMsg{Note: note}
-		cmd := component.backgroundUpdate(msg)
+		msg := commands.CreateNoteMsg{Note: note}
+		cmd := component.BackgroundUpdate(msg)
 
 		if cmd == nil {
-			t.Fatal("Expected backgroundUpdate to return a command for CreateNoteMsg")
+			t.Fatal("Expected BackgroundUpdate to return a command for CreateNoteMsg")
 		}
 
 		result := cmd()
-		viewMsg, ok := result.(ViewNoteMsg)
+		viewMsg, ok := result.(commands.ViewNoteMsg)
 		if !ok {
 			t.Fatal("Expected ViewNoteMsg from CreateNoteMsg command")
 		}
@@ -71,17 +107,17 @@ func TestAddComponentBackgroundUpdate(t *testing.T) {
 func TestAddComponentForegroundUpdate(t *testing.T) {
 	t.Run("Escape key creates QuitAddNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newAddComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyEsc}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd == nil {
-			t.Fatal("Expected foregroundUpdate to return a command for Escape key")
+			t.Fatal("Expected ForegroundUpdate to return a command for Escape key")
 		}
 
 		msg := cmd()
-		_, ok := msg.(QuitAddNoteMsg)
+		_, ok := msg.(commands.QuitAddNoteMsg)
 		if !ok {
 			t.Error("Expected QuitAddNoteMsg from Escape key command")
 		}
@@ -89,19 +125,19 @@ func TestAddComponentForegroundUpdate(t *testing.T) {
 
 	t.Run("Enter key with filename creates note and CreateNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newAddComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		component.textInput.SetValue("mynote")
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyEnter}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd == nil {
-			t.Fatal("Expected foregroundUpdate to return a command for Enter key with filename")
+			t.Fatal("Expected ForegroundUpdate to return a command for Enter key with filename")
 		}
 
 		msg := cmd()
-		createMsg, ok := msg.(CreateNoteMsg)
+		createMsg, ok := msg.(commands.CreateNoteMsg)
 		if !ok {
 			t.Fatal("Expected CreateNoteMsg from Enter key command")
 		}
@@ -119,15 +155,15 @@ func TestAddComponentForegroundUpdate(t *testing.T) {
 		mockRepo := &mockRepository{
 			err: errors.New("repository error"),
 		}
-		component := newAddComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		component.textInput.SetValue("mynote")
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyEnter}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd == nil {
-			t.Fatal("Expected foregroundUpdate to return a command for Enter key with filename")
+			t.Fatal("Expected ForegroundUpdate to return a command for Enter key with filename")
 		}
 
 		msg := cmd()
@@ -138,15 +174,15 @@ func TestAddComponentForegroundUpdate(t *testing.T) {
 
 	t.Run("Enter key with empty filename returns nil", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newAddComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		component.textInput.SetValue("")
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyEnter}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd != nil {
-			t.Error("Expected foregroundUpdate to return nil for Enter key with empty filename")
+			t.Error("Expected ForegroundUpdate to return nil for Enter key with empty filename")
 		}
 	})
 }

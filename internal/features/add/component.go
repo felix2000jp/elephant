@@ -1,56 +1,57 @@
-package notes
+package add
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/commands"
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"log/slog"
 )
 
-type addComponent struct {
+type Component struct {
 	width, height int
 	textInput     textinput.Model
 	repository    core.Repository
 }
 
-func newAddComponent(repository core.Repository) addComponent {
+func NewComponent(repository core.Repository) Component {
 	ti := textinput.New()
 	ti.Placeholder = "Enter note filename (without .md)"
 	ti.Focus()
 
-	return addComponent{
+	return Component{
 		textInput:  ti,
 		repository: repository,
 	}
 }
 
-func (ac *addComponent) init() tea.Cmd {
+func (ac *Component) Init() tea.Cmd {
 	return nil
 }
 
-func (ac *addComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
+func (ac *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := theme.Style.GetFrameSize()
 		ac.width = msg.Width - h
 		ac.height = msg.Height - v
 
-	case CreateNoteMsg:
+	case commands.CreateNoteMsg:
 		return func() tea.Msg {
-			return ViewNoteMsg{Note: msg.Note}
+			return commands.ViewNoteMsg{Note: msg.Note}
 		}
 	}
 
 	return nil
 }
 
-func (ac *addComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
+func (ac *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		switch keyMsg.Type {
 		case tea.KeyEsc:
 			return func() tea.Msg {
-				return QuitAddNoteMsg{}
+				return commands.QuitAddNoteMsg{}
 			}
 		case tea.KeyEnter:
 			filename := ac.textInput.Value()
@@ -62,7 +63,7 @@ func (ac *addComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 						return nil
 					}
 
-					return CreateNoteMsg{Note: note}
+					return commands.CreateNoteMsg{Note: note}
 				}
 			}
 		}
@@ -73,7 +74,7 @@ func (ac *addComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (ac *addComponent) view() string {
+func (ac *Component) View() string {
 	content := "Create New Note\n\n" + ac.textInput.View() + "\n\nPress Enter to create, Esc to cancel"
 	return theme.Style.Width(ac.width).Height(ac.height).Render(content)
 }

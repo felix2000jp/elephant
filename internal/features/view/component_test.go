@@ -1,14 +1,51 @@
-package notes
+package view
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/commands"
+	"errors"
 	tea "github.com/charmbracelet/bubbletea"
 	"testing"
 )
 
+type mockRepository struct {
+	notes []core.Note
+	err   error
+}
+
+func (m *mockRepository) GetAllNotes() ([]core.Note, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return m.notes, nil
+}
+
+func (m *mockRepository) GetNoteByTitle(title string) (core.Note, error) {
+	if m.err != nil {
+		return core.Note{}, m.err
+	}
+	for _, note := range m.notes {
+		if note.Title() == title {
+			return note, nil
+		}
+	}
+	return core.Note{}, errors.New("note not found")
+}
+
+func (m *mockRepository) SaveNote(_ core.Note) error {
+	return m.err
+}
+
+func (m *mockRepository) CreateEmptyNote(filename string) (core.Note, error) {
+	if m.err != nil {
+		return core.Note{}, m.err
+	}
+	return core.NewNote(filename+".md", ""), nil
+}
+
 func TestNewViewComponent(t *testing.T) {
 	mockRepo := &mockRepository{}
-	component := newViewComponent(mockRepo)
+	component := NewComponent(mockRepo)
 
 	if component.repository != mockRepo {
 		t.Error("Expected repository to be set correctly")
@@ -26,15 +63,15 @@ func TestNewViewComponent(t *testing.T) {
 func TestViewComponentBackgroundUpdate(t *testing.T) {
 	t.Run("ViewNoteMsg sets current note and renders content", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newViewComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note := core.NewNote("test.md", "# Test Note\nThis is test content")
-		msg := ViewNoteMsg{Note: note}
+		msg := commands.ViewNoteMsg{Note: note}
 
-		cmd := component.backgroundUpdate(msg)
+		cmd := component.BackgroundUpdate(msg)
 
 		if cmd != nil {
-			t.Error("Expected backgroundUpdate to return nil for ViewNoteMsg")
+			t.Error("Expected BackgroundUpdate to return nil for ViewNoteMsg")
 		}
 
 		if component.currentNote.Title() != "test" {
@@ -48,19 +85,19 @@ func TestViewComponentBackgroundUpdate(t *testing.T) {
 
 	t.Run("QuitEditNoteMsg updates current note and re-renders content", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newViewComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		originalNote := core.NewNote("test.md", "# Original Content\nOriginal text")
-		viewMsg := ViewNoteMsg{Note: originalNote}
-		component.backgroundUpdate(viewMsg)
+		viewMsg := commands.ViewNoteMsg{Note: originalNote}
+		component.BackgroundUpdate(viewMsg)
 
 		updatedNote := core.NewNote("test.md", "# Updated Content\nUpdated text")
-		quitMsg := QuitEditNoteMsg{Note: updatedNote}
+		quitMsg := commands.QuitEditNoteMsg{Note: updatedNote}
 
-		cmd := component.backgroundUpdate(quitMsg)
+		cmd := component.BackgroundUpdate(quitMsg)
 
 		if cmd != nil {
-			t.Error("Expected backgroundUpdate to return nil for QuitEditNoteMsg")
+			t.Error("Expected BackgroundUpdate to return nil for QuitEditNoteMsg")
 		}
 
 		if component.currentNote.FileContent() != "# Updated Content\nUpdated text" {
@@ -70,15 +107,15 @@ func TestViewComponentBackgroundUpdate(t *testing.T) {
 
 	t.Run("handles markdown rendering errors gracefully", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newViewComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note := core.NewNote("test.md", "```\nunclosed code block")
-		msg := ViewNoteMsg{Note: note}
+		msg := commands.ViewNoteMsg{Note: note}
 
-		cmd := component.backgroundUpdate(msg)
+		cmd := component.BackgroundUpdate(msg)
 
 		if cmd != nil {
-			t.Error("Expected backgroundUpdate to return nil even with render errors")
+			t.Error("Expected BackgroundUpdate to return nil even with render errors")
 		}
 
 		if component.currentNote.FileContent() != "```\nunclosed code block" {
@@ -90,17 +127,17 @@ func TestViewComponentBackgroundUpdate(t *testing.T) {
 func TestViewComponentForegroundUpdate(t *testing.T) {
 	t.Run("Escape key creates QuitViewNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newViewComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyEsc}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd == nil {
-			t.Fatal("Expected foregroundUpdate to return a command for Escape key")
+			t.Fatal("Expected ForegroundUpdate to return a command for Escape key")
 		}
 
 		msg := cmd()
-		_, ok := msg.(QuitViewNoteMsg)
+		_, ok := msg.(commands.QuitViewNoteMsg)
 		if !ok {
 			t.Error("Expected QuitViewNoteMsg from Escape key command")
 		}
@@ -108,17 +145,17 @@ func TestViewComponentForegroundUpdate(t *testing.T) {
 
 	t.Run("Enter key creates EditNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newViewComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyEnter}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd == nil {
-			t.Fatal("Expected foregroundUpdate to return a command for Enter key")
+			t.Fatal("Expected ForegroundUpdate to return a command for Enter key")
 		}
 
 		msg := cmd()
-		_, ok := msg.(EditNoteMsg)
+		_, ok := msg.(commands.EditNoteMsg)
 		if !ok {
 			t.Error("Expected EditNoteMsg from Enter key command")
 		}

@@ -1,7 +1,8 @@
-package notes
+package list
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/commands"
 	"errors"
 	tea "github.com/charmbracelet/bubbletea"
 	"testing"
@@ -44,7 +45,7 @@ func (m *mockRepository) CreateEmptyNote(filename string) (core.Note, error) {
 
 func TestNewListComponent(t *testing.T) {
 	mockRepo := &mockRepository{}
-	component := newListComponent(mockRepo)
+	component := NewComponent(mockRepo)
 
 	if component.repository != mockRepo {
 		t.Error("Expected repository to be set correctly")
@@ -67,17 +68,17 @@ func TestListComponentInit(t *testing.T) {
 			notes: []core.Note{note1, note2},
 		}
 
-		component := newListComponent(mockRepo)
-		cmd := component.init()
+		component := NewComponent(mockRepo)
+		cmd := component.Init()
 
 		if cmd == nil {
-			t.Fatal("Expected init to return a command")
+			t.Fatal("Expected Init to return a command")
 		}
 
 		msg := cmd()
-		listMsg, ok := msg.(ListNotesMsg)
+		listMsg, ok := msg.(commands.ListNotesMsg)
 		if !ok {
-			t.Fatal("Expected ListNotesMsg from init command")
+			t.Fatal("Expected ListNotesMsg from Init command")
 		}
 
 		if len(listMsg.Notes) != 2 {
@@ -90,17 +91,17 @@ func TestListComponentInit(t *testing.T) {
 			err: errors.New("repository error"),
 		}
 
-		component := newListComponent(mockRepo)
-		cmd := component.init()
+		component := NewComponent(mockRepo)
+		cmd := component.Init()
 
 		if cmd == nil {
-			t.Fatal("Expected init to return a command")
+			t.Fatal("Expected Init to return a command")
 		}
 
 		msg := cmd()
-		listMsg, ok := msg.(ListNotesMsg)
+		listMsg, ok := msg.(commands.ListNotesMsg)
 		if !ok {
-			t.Fatal("Expected ListNotesMsg from init command")
+			t.Fatal("Expected ListNotesMsg from Init command")
 		}
 
 		if len(listMsg.Notes) != 0 {
@@ -112,13 +113,13 @@ func TestListComponentInit(t *testing.T) {
 func TestListComponentBackgroundUpdate(t *testing.T) {
 	t.Run("ListNotesMsg sets items on the list", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newListComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note1 := core.NewNote("note1.md", "# Note 1\nContent 1")
 		note2 := core.NewNote("note2.md", "# Note 2\nContent 2")
-		msg := ListNotesMsg{Notes: []core.Note{note1, note2}}
+		msg := commands.ListNotesMsg{Notes: []core.Note{note1, note2}}
 
-		cmd := component.backgroundUpdate(msg)
+		cmd := component.BackgroundUpdate(msg)
 
 		if cmd != nil {
 			t.Error("Expected backgroundUpdate to return nil for ListNotesMsg")
@@ -132,17 +133,17 @@ func TestListComponentBackgroundUpdate(t *testing.T) {
 
 	t.Run("QuitEditNoteMsg updates selected item on the list", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newListComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note1 := core.NewNote("/path/note1.md", "# Note 1\nOriginal content")
 		note2 := core.NewNote("/path/note2.md", "# Note 2\nContent 2")
-		listMsg := ListNotesMsg{Notes: []core.Note{note1, note2}}
-		component.backgroundUpdate(listMsg)
+		listMsg := commands.ListNotesMsg{Notes: []core.Note{note1, note2}}
+		component.BackgroundUpdate(listMsg)
 
 		updatedNote1 := core.NewNote("/path/note1.md", "# Note 1\nUpdated content")
-		quitMsg := QuitEditNoteMsg{Note: updatedNote1}
+		quitMsg := commands.QuitEditNoteMsg{Note: updatedNote1}
 
-		cmd := component.backgroundUpdate(quitMsg)
+		cmd := component.BackgroundUpdate(quitMsg)
 
 		if cmd != nil {
 			t.Error("Expected backgroundUpdate to return nil for QuitEditNoteMsg")
@@ -166,17 +167,17 @@ func TestListComponentBackgroundUpdate(t *testing.T) {
 
 	t.Run("CreateNoteMsg adds note to existing list", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newListComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note1 := core.NewNote("note1.md", "# Note 1\nContent 1")
 		note2 := core.NewNote("note2.md", "# Note 2\nContent 2")
-		listMsg := ListNotesMsg{Notes: []core.Note{note1, note2}}
-		component.backgroundUpdate(listMsg)
+		listMsg := commands.ListNotesMsg{Notes: []core.Note{note1, note2}}
+		component.BackgroundUpdate(listMsg)
 
 		newNote := core.NewNote("newnote.md", "# New Note\nNew content")
-		createMsg := CreateNoteMsg{Note: newNote}
+		createMsg := commands.CreateNoteMsg{Note: newNote}
 
-		cmd := component.backgroundUpdate(createMsg)
+		cmd := component.BackgroundUpdate(createMsg)
 
 		if cmd != nil {
 			t.Error("Expected backgroundUpdate to return nil for CreateNoteMsg")
@@ -197,21 +198,21 @@ func TestListComponentBackgroundUpdate(t *testing.T) {
 func TestListComponentForegroundUpdate(t *testing.T) {
 	t.Run("Enter key creates ViewNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newListComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note1 := core.NewNote("note1.md", "# Note 1\nContent 1")
-		listMsg := ListNotesMsg{Notes: []core.Note{note1}}
-		component.backgroundUpdate(listMsg)
+		listMsg := commands.ListNotesMsg{Notes: []core.Note{note1}}
+		component.BackgroundUpdate(listMsg)
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyEnter}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd == nil {
 			t.Fatal("Expected foregroundUpdate to return a command for Enter key")
 		}
 
 		msg := cmd()
-		viewMsg, ok := msg.(ViewNoteMsg)
+		viewMsg, ok := msg.(commands.ViewNoteMsg)
 		if !ok {
 			t.Fatal("Expected ViewNoteMsg from Enter key command")
 		}
@@ -223,21 +224,21 @@ func TestListComponentForegroundUpdate(t *testing.T) {
 
 	t.Run("Enter key during filtering does not create ViewNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newListComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note1 := core.NewNote("note1.md", "# Note 1\nContent 1")
-		listMsg := ListNotesMsg{Notes: []core.Note{note1}}
-		component.backgroundUpdate(listMsg)
+		listMsg := commands.ListNotesMsg{Notes: []core.Note{note1}}
+		component.BackgroundUpdate(listMsg)
 
 		filterKeyMsg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'/'}}
-		component.foregroundUpdate(filterKeyMsg)
+		component.ForegroundUpdate(filterKeyMsg)
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyEnter}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd != nil {
 			msg := cmd()
-			if _, ok := msg.(ViewNoteMsg); ok {
+			if _, ok := msg.(commands.ViewNoteMsg); ok {
 				t.Error("Expected no ViewNoteMsg during filtering mode")
 			}
 		}
@@ -245,17 +246,17 @@ func TestListComponentForegroundUpdate(t *testing.T) {
 
 	t.Run("'n' key creates AddNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newListComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'n'}}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd == nil {
 			t.Fatal("Expected foregroundUpdate to return a command for 'n' key")
 		}
 
 		msg := cmd()
-		_, ok := msg.(AddNoteMsg)
+		_, ok := msg.(commands.AddNoteMsg)
 		if !ok {
 			t.Error("Expected AddNoteMsg from 'n' key command")
 		}
@@ -263,21 +264,21 @@ func TestListComponentForegroundUpdate(t *testing.T) {
 
 	t.Run("'n' key during filtering does not create AddNoteMsg", func(t *testing.T) {
 		mockRepo := &mockRepository{}
-		component := newListComponent(mockRepo)
+		component := NewComponent(mockRepo)
 
 		note1 := core.NewNote("note1.md", "# Note 1\nContent 1")
-		listMsg := ListNotesMsg{Notes: []core.Note{note1}}
-		component.backgroundUpdate(listMsg)
+		listMsg := commands.ListNotesMsg{Notes: []core.Note{note1}}
+		component.BackgroundUpdate(listMsg)
 
 		filterKeyMsg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'/'}}
-		component.foregroundUpdate(filterKeyMsg)
+		component.ForegroundUpdate(filterKeyMsg)
 
 		keyMsg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'n'}}
-		cmd := component.foregroundUpdate(keyMsg)
+		cmd := component.ForegroundUpdate(keyMsg)
 
 		if cmd != nil {
 			msg := cmd()
-			if _, ok := msg.(AddNoteMsg); ok {
+			if _, ok := msg.(commands.AddNoteMsg); ok {
 				t.Error("Expected no AddNoteMsg during filtering mode")
 			}
 		}

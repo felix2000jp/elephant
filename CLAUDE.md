@@ -43,11 +43,21 @@ internal/
 │   ├── repository.go            # File system operations
 │   └── repository_test.go       # Repository tests
 ├── features/                    # Feature modules
-│   └── notes/                   # Notes feature
-│       ├── feature.go           # Feature orchestrator with state management
-│       ├── list_component.go    # List notes component
-│       ├── view_component.go    # View note component
-│       ├── edit_component.go    # Edit note component
+│   ├── add/                     # Add note component
+│   │   ├── component.go         # Add note component implementation
+│   │   └── component_test.go    # Add component tests
+│   ├── commands/                # Shared events and messages
+│   │   └── events.go            # Cross-component events for state transitions
+│   ├── edit/                    # Edit note component
+│   │   ├── component.go         # Edit note component implementation
+│   │   └── component_test.go    # Edit component tests
+│   ├── list/                    # List notes component
+│   │   ├── component.go         # List notes component implementation
+│   │   └── component_test.go    # List component tests
+│   ├── view/                    # View note component
+│   │   ├── component.go         # View note component implementation
+│   │   └── component_test.go    # View component tests
+│   └── notes.go                 # Notes feature orchestrator with state management
 ├── theme/                       # UI styling
 │   └── style.go                 # Application styles and themes
 └── app/                         # Application orchestrator
@@ -58,21 +68,32 @@ internal/
 
 #### Component Structure
 
-- Each component (list, view, edit) is a separate file with its own responsibilities
-- The `feature.go` file orchestrates state transitions and component coordination
-- Components have both `ForegroundUpdate` (when active) and `BackgroundUpdate` (when inactive) methods
-- State management is centralized in the feature orchestrator
+- Each component (list, view, edit, add) is in its own package with dedicated responsibilities
+- Components are isolated from each other to prevent cyclic dependencies  
+- The `notes.go` file orchestrates state transitions and component coordination
+- Components expose `Init()`, `ForegroundUpdate()` (when active), `BackgroundUpdate()` (when inactive), and `View()` methods
+- State management is centralized in the notes feature orchestrator
 
-#### Message Flow
+#### Message Flow & Event Architecture
 
-- App layer routes messages to the notes feature
-- Feature orchestrator manages state transitions based on messages (ViewNoteMsg, EditNoteMsg, etc.)
+- App layer routes messages to the notes feature orchestrator
+- Feature orchestrator manages state transitions based on shared events (ViewNoteMsg, EditNoteMsg, etc.)
+- **Cross-component events** are defined in `commands/events.go` for state transitions and data flow between components
+- **Component-specific events** should be defined within each component's package for internal functionality
 - Components handle their own specific UI updates and user interactions
-- Shared messages are defined in `messages.go` for cross-component communication
+- Repository dependency is injected through component constructors
+
+## Configuration
+
+### Environment Variables
+
+- `ELEPHANT_NOTES_DIR`: Sets the directory where notes are stored (defaults to ".elephant")
 
 ## Notes
 
 - Standard Go conventions and best practices should be applied as development progresses
 - Use the feature-based architecture for all new functionality
 - Keep core domain logic in `internal/core/` with no UI dependencies
+- Components should be isolated in their own packages to prevent cyclic dependencies
+- Use `commands/events.go` for cross-component events; component-specific events go in component packages
 - Features should communicate through the app layer, not directly with each other

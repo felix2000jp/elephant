@@ -1,7 +1,8 @@
-package notes
+package view
 
 import (
 	"elephant/internal/core"
+	"elephant/internal/features/commands"
 	"elephant/internal/theme"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -9,7 +10,7 @@ import (
 	"log/slog"
 )
 
-type viewComponent struct {
+type Component struct {
 	width, height int
 	markdown      viewport.Model
 	renderer      *glamour.TermRenderer
@@ -18,7 +19,7 @@ type viewComponent struct {
 	currentNote core.Note
 }
 
-func newViewComponent(repository core.Repository) viewComponent {
+func NewComponent(repository core.Repository) Component {
 	renderer, err := glamour.NewTermRenderer(glamour.WithAutoStyle(), glamour.WithWordWrap(120))
 	if err != nil {
 		slog.Error("failed to initialize markdown renderer", "error", err)
@@ -26,7 +27,7 @@ func newViewComponent(repository core.Repository) viewComponent {
 	}
 
 	vp := viewport.New(0, 0)
-	vc := viewComponent{
+	vc := Component{
 		markdown:   vp,
 		renderer:   renderer,
 		width:      vp.Width,
@@ -37,11 +38,11 @@ func newViewComponent(repository core.Repository) viewComponent {
 	return vc
 }
 
-func (vc *viewComponent) init() tea.Cmd {
+func (vc *Component) Init() tea.Cmd {
 	return nil
 }
 
-func (vc *viewComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
+func (vc *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := theme.Style.GetFrameSize()
@@ -52,7 +53,7 @@ func (vc *viewComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 		vc.markdown.Width = vc.width
 		vc.markdown.Height = vc.height
 
-	case ViewNoteMsg:
+	case commands.ViewNoteMsg:
 		vc.currentNote = msg.Note
 
 		content, err := vc.renderer.Render(msg.Note.FileContent())
@@ -64,7 +65,7 @@ func (vc *viewComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 
 		vc.markdown.SetContent(content)
 
-	case QuitEditNoteMsg:
+	case commands.QuitEditNoteMsg:
 		vc.currentNote = msg.Note
 
 		content, err := vc.renderer.Render(msg.Note.FileContent())
@@ -80,16 +81,16 @@ func (vc *viewComponent) backgroundUpdate(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (vc *viewComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
+func (vc *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEsc {
 			return func() tea.Msg {
-				return QuitViewNoteMsg{}
+				return commands.QuitViewNoteMsg{}
 			}
 		}
 		if keyMsg.Type == tea.KeyEnter {
 			return func() tea.Msg {
-				return EditNoteMsg{}
+				return commands.EditNoteMsg{}
 			}
 		}
 	}
@@ -99,7 +100,7 @@ func (vc *viewComponent) foregroundUpdate(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (vc *viewComponent) view() string {
+func (vc *Component) View() string {
 	markdownView := vc.markdown.View()
 	return theme.Style.Width(vc.width).Height(vc.height).Render(markdownView)
 }
