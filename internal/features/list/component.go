@@ -4,6 +4,7 @@ import (
 	"elephant/internal/core"
 	"elephant/internal/features/commands"
 	"elephant/internal/theme"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"log/slog"
@@ -12,17 +13,21 @@ import (
 type Component struct {
 	width, height int
 	list          list.Model
+	keyMap        customKeyMap
 	repository    core.Repository
 }
 
 func NewComponent(repository core.Repository) Component {
+	keyMap := newCustomKeyMap()
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	itemList.Title = "Elephant Notes"
+	itemList.KeyMap = keyMap.baseKeyMap
 
 	lc := Component{
-		list:       itemList,
 		width:      itemList.Width(),
 		height:     itemList.Height(),
+		list:       itemList,
+		keyMap:     keyMap,
 		repository: repository,
 	}
 
@@ -84,16 +89,16 @@ func (lc *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 }
 
 func (lc *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
-	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		if keyMsg.Type == tea.KeyEnter && lc.list.FilterState() != list.Filtering {
-			return func() tea.Msg {
-				selectedItem := lc.list.SelectedItem().(core.Note)
-				return commands.ViewNoteMsg{Note: selectedItem}
-			}
-		}
-		if keyMsg.Type == tea.KeyRunes && len(keyMsg.Runes) > 0 && keyMsg.Runes[0] == 'n' && lc.list.FilterState() != list.Filtering {
+	if keyMsg, ok := msg.(tea.KeyMsg); ok && lc.list.FilterState() != list.Filtering {
+		switch {
+		case key.Matches(keyMsg, lc.keyMap.addNote):
 			return func() tea.Msg {
 				return commands.AddNoteMsg{}
+			}
+		case key.Matches(keyMsg, lc.keyMap.viewNote):
+			selectedItem := lc.list.SelectedItem().(core.Note)
+			return func() tea.Msg {
+				return commands.ViewNoteMsg{Note: selectedItem}
 			}
 		}
 	}
