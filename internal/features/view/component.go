@@ -15,29 +15,28 @@ type Component struct {
 	width, height int
 	markdown      viewport.Model
 	renderer      *glamour.TermRenderer
-	keyMap        customKeyMap
+	keys          componentKeyMap
 	repository    core.Repository
 
 	currentNote core.Note
 }
 
 func NewComponent(repository core.Repository) Component {
-	keyMap := newCustomKeyMap()
+	keys := newComponentKeyMap()
+	vp := viewport.New(0, 0)
+
 	renderer, err := glamour.NewTermRenderer(glamour.WithAutoStyle(), glamour.WithWordWrap(120))
 	if err != nil {
 		slog.Error("failed to initialize markdown renderer", "error", err)
 		panic("failed to initialize markdown renderer")
 	}
 
-	vp := viewport.New(0, 0)
-	vp.KeyMap = keyMap.baseKeyMap
-
 	vc := Component{
 		width:      vp.Width,
 		height:     vp.Height,
 		markdown:   vp,
 		renderer:   renderer,
-		keyMap:     keyMap,
+		keys:       keys,
 		repository: repository,
 	}
 
@@ -90,11 +89,11 @@ func (vc *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 func (vc *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		switch {
-		case key.Matches(keyMsg, vc.keyMap.quitViewNote):
+		case key.Matches(keyMsg, vc.keys.quitViewNote):
 			return func() tea.Msg {
 				return commands.QuitViewNoteMsg{}
 			}
-		case key.Matches(keyMsg, vc.keyMap.editNote):
+		case key.Matches(keyMsg, vc.keys.editNote):
 			return func() tea.Msg {
 				return commands.EditNoteMsg{}
 			}

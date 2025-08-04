@@ -13,21 +13,21 @@ import (
 type Component struct {
 	width, height int
 	list          list.Model
-	keyMap        customKeyMap
+	keys          componentKeyMap
 	repository    core.Repository
 }
 
 func NewComponent(repository core.Repository) Component {
-	keyMap := newCustomKeyMap()
+	keys := newComponentKeyMap()
 	itemList := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	itemList.Title = "Elephant Notes"
-	itemList.KeyMap = keyMap.baseKeyMap
+	itemList.AdditionalFullHelpKeys = keys.getListOfBindings
 
 	lc := Component{
 		width:      itemList.Width(),
 		height:     itemList.Height(),
 		list:       itemList,
-		keyMap:     keyMap,
+		keys:       keys,
 		repository: repository,
 	}
 
@@ -91,11 +91,11 @@ func (lc *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 func (lc *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && lc.list.FilterState() != list.Filtering {
 		switch {
-		case key.Matches(keyMsg, lc.keyMap.addNote):
+		case key.Matches(keyMsg, lc.keys.addNote):
 			return func() tea.Msg {
 				return commands.AddNoteMsg{}
 			}
-		case key.Matches(keyMsg, lc.keyMap.viewNote):
+		case key.Matches(keyMsg, lc.keys.viewNote):
 			selectedItem := lc.list.SelectedItem().(core.Note)
 			return func() tea.Msg {
 				return commands.ViewNoteMsg{Note: selectedItem}

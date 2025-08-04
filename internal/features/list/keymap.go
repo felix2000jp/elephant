@@ -2,17 +2,15 @@ package list
 
 import (
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
 )
 
-type customKeyMap struct {
-	baseKeyMap list.KeyMap
-	addNote    key.Binding
-	viewNote   key.Binding
+type componentKeyMap struct {
+	addNote  key.Binding
+	viewNote key.Binding
 }
 
-func newCustomKeyMap() customKeyMap {
-	km := customKeyMap{
+func newComponentKeyMap() componentKeyMap {
+	km := componentKeyMap{
 		addNote: key.NewBinding(
 			key.WithKeys("n"),
 			key.WithHelp("n", "new note"),
@@ -23,6 +21,12 @@ func newCustomKeyMap() customKeyMap {
 		),
 	}
 
-	km.baseKeyMap = list.DefaultKeyMap()
 	return km
+}
+
+func (a componentKeyMap) getListOfBindings() []key.Binding {
+	return []key.Binding{
+		a.addNote,
+		a.viewNote,
+	}
 }

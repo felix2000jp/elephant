@@ -2,17 +2,15 @@ package view
 
 import (
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/viewport"
 )
 
-type customKeyMap struct {
-	baseKeyMap   viewport.KeyMap
+type componentKeyMap struct {
 	editNote     key.Binding
 	quitViewNote key.Binding
 }
 
-func newCustomKeyMap() customKeyMap {
-	km := customKeyMap{
+func newComponentKeyMap() componentKeyMap {
+	km := componentKeyMap{
 		editNote: key.NewBinding(
 			key.WithKeys("enter", " "),
 			key.WithHelp("enter/space", "edit note"),
@@ -23,6 +21,5 @@ func newCustomKeyMap() customKeyMap {
 		),
 	}
 
-	km.baseKeyMap = viewport.DefaultKeyMap()
 	return km
 }

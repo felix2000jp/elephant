@@ -4,6 +4,7 @@ import (
 	"elephant/internal/core"
 	"elephant/internal/features/commands"
 	"elephant/internal/theme"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"log/slog"
@@ -13,11 +14,12 @@ type Component struct {
 	width, height int
 	textarea      textarea.Model
 	repository    core.Repository
-
-	currentNote core.Note
+	keys          componentKeyMap
+	currentNote   core.Note
 }
 
 func NewComponent(repository core.Repository) Component {
+	keys := newComponentKeyMap()
 	ta := textarea.New()
 	ta.Focus()
 	ta.Prompt = ""
@@ -28,6 +30,7 @@ func NewComponent(repository core.Repository) Component {
 		height:     ta.Height(),
 		textarea:   ta,
 		repository: repository,
+		keys:       keys,
 	}
 
 	return ec
@@ -59,10 +62,11 @@ func (ec *Component) BackgroundUpdate(msg tea.Msg) tea.Cmd {
 
 func (ec *Component) ForegroundUpdate(msg tea.Msg) tea.Cmd {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		if keyMsg.Type == tea.KeyEsc {
-			return func() tea.Msg {
-				ec.currentNote = core.NewNote(ec.currentNote.FilePath(), ec.textarea.Value())
+		switch {
+		case key.Matches(keyMsg, ec.keys.quitEditNote):
+			ec.currentNote = core.NewNote(ec.currentNote.FilePath(), ec.textarea.Value())
 
+			return func() tea.Msg {
 				err := ec.repository.SaveNote(ec.currentNote)
 				if err != nil {
 					slog.Error("failed to save note", "error", err)
